@@ -1,0 +1,6 @@
+{
+  "name": "VTS",
+  "description": "Ứng dụng tự động chấm công cá nhân cho nhân viên, quản lý công việc hàng ngày, tính toán tổng số ngày công, tiền ăn uống, hỗ trợ và tính toán tiền lương tạm tính chính xác.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
