@@ -1,0 +1,308 @@
+{
+    "user_config": {
+        "fullName": "Ngô Thế Quân",
+        "avatarName": "AVATAR_1",
+        "dailySalary": 350000.0,
+        "dailyMealAllowance": 20000.0,
+        "isDarkMode": false,
+        "avatarUri": "/data/user/0/com.aistudio.tuchamcong.gkjrpa/files/custom_avatar_1781525586007.jpg",
+        "avatarScale": 1.6517939567565918,
+        "avatarOffsetX": -0.5415229797363281,
+        "avatarOffsetY": 47.58294677734375,
+        "occupation": "Công nhân",
+        "selectedColorHex": "#1E88E5",
+        "selectedFontName": "Sử dụng mặc định",
+        "appThemeMode": "SYSTEM",
+        "monthActualSalaries": "{}"
+    },
+    "jobs": [
+        {
+            "id": 1,
+            "name": "Nhám",
+            "rate": 1.0,
+            "supportAmount": 0.0,
+            "isDefault": true
+        },
+        {
+            "id": 7,
+            "name": "Dập đinh",
+            "rate": 1.2,
+            "supportAmount": 200000.0,
+            "isDefault": false
+        },
+        {
+            "id": 8,
+            "name": "QC",
+            "rate": 1.0,
+            "supportAmount": 150000.0,
+            "isDefault": false
+        },
+        {
+            "id": 9,
+            "name": "Vệ sinh đóng gói",
+            "rate": 1.1,
+            "supportAmount": 80000.0,
+            "isDefault": false
+        },
+        {
+            "id": 10,
+            "name": "Đai đóng gói",
+            "rate": 1.2,
+            "supportAmount": 110000.0,
+            "isDefault": false
+        },
+        {
+            "id": 11,
+            "name": "Đinh nẹp",
+            "rate": 1.1,
+            "supportAmount": 60000.0,
+            "isDefault": false
+        },
+        {
+            "id": 12,
+            "name": "Đóng gói",
+            "rate": 1.0,
+            "supportAmount": 0.0,
+            "isDefault": false
+        },
+        {
+            "id": 13,
+            "name": "Túi khí",
+            "rate": 1.0,
+            "supportAmount": 0.0,
+            "isDefault": false
+        },
+        {
+            "id": 14,
+            "name": "Dỡ PP",
+            "rate": 1.2,
+            "supportAmount": 100000.0,
+            "isDefault": false
+        },
+        {
+            "id": 15,
+            "name": "Bỏ túi đóng gói",
+            "rate": 1.1,
+            "supportAmount": 60000.0,
+            "isDefault": false
+        },
+        {
+            "id": 16,
+            "name": "Chặt",
+            "rate": 1.1,
+            "supportAmount": 55000.0,
+            "isDefault": false
+        }
+    ],
+    "monthly_supports": [
+        {
+            "id": 5,
+            "name": "Tay nghề",
+            "amount": 100000.0
+        },
+        {
+            "id": 6,
+            "name": "Chuyên cần",
+            "amount": 300000.0
+        },
+        {
+            "id": 7,
+            "name": "Bhxh",
+            "amount": -558000.0
+        },
+        {
+            "id": 8,
+            "name": "Thâm niên",
+            "amount": 150000.0
+        }
+    ],
+    "work_logs": [
+        {
+            "date": "2026-06-19",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-18",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-17",
+            "jobId1": 10,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-16",
+            "jobId1": 10,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-15",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-13",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-12",
+            "jobId1": 10,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-11",
+            "jobId1": 7,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-10",
+            "jobId1": 7,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-09",
+            "jobId1": 7,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-08",
+            "jobId1": 7,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-06",
+            "jobId1": 9,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-05",
+            "jobId1": 9,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-04",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-03",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-02",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        },
+        {
+            "date": "2026-06-01",
+            "jobId1": 8,
+            "ratio1": 1.0,
+            "jobId2": null,
+            "ratio2": 0.0,
+            "mealAllowance": 20000.0,
+            "otherAmount": 0.0,
+            "otherNote": "",
+            "note": ""
+        }
+    ]
+}

@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
@@ -71,6 +74,10 @@ fun MainLayout(viewModel: AttendanceViewModel) {
     var currentTab by remember { mutableStateOf("home") }
     var showWorkLogDialog by remember { mutableStateOf(false) }
     var showMonthJumpDialog by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = currentTab == "stats") {
+        currentTab = "home"
+    }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -401,8 +408,24 @@ fun HomeScreen(
         item {
             Card(
                 shape = RoundedCornerShape(24.dp),
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .then(
+                        if (userConfig.selectedColorHex.contains(",")) {
+                            val colors = userConfig.selectedColorHex.split(",").map {
+                                try {
+                                    Color(android.graphics.Color.parseColor(it.trim()))
+                                } catch (e: Exception) {
+                                    Color(0xFF1E88E5)
+                                }
+                            }
+                            Modifier.background(Brush.linearGradient(colors))
+                        } else {
+                            Modifier.background(MaterialTheme.colorScheme.primaryContainer)
+                        }
+                    ),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
                 Column(
                     modifier = Modifier
@@ -1787,7 +1810,8 @@ fun JobsScreen(
 fun JobEditorDialog(
     job: Job?,
     onDismiss: () -> Unit,
-    onSave: (String, Double, Double) -> Unit
+    onSave: (String, Double, Double) -> Unit,
+    onDelete: (() -> Unit)? = null
 ) {
     var name by remember { mutableStateOf(job?.name ?: "") }
     var rateStr by remember { mutableStateOf(job?.rate?.toString() ?: "1.0") }
@@ -1867,8 +1891,23 @@ fun JobEditorDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Hủy bỏ")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (job != null && onDelete != null) {
+                    TextButton(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Xóa công việc", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Xóa công việc")
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Hủy bỏ")
+                }
             }
         }
     )
@@ -2821,19 +2860,43 @@ fun OldSettingsScreen(
                         "#7B1FA2" to Color(0xFF7B1FA2), // Purple
                         "#C62828" to Color(0xFFC62828), // Ruby Red
                         "#EF6C00" to Color(0xFFEF6C00), // Orange
-                        "#37474F" to Color(0xFF37474F)  // Slate
+                        "#37474F" to Color(0xFF37474F),  // Slate
+                        "#FFD600" to Color(0xFFFFD600), // Gold/Yellow
+                        "#00C853" to Color(0xFF00C853), // Emerald Green
+                        "#FF2C8C" to Color(0xFFFF2C8C), // Rose/Pink
+                        "#607D8B" to Color(0xFF607D8B), // Slate Grey
+                        "#FF4359,#FF9F43" to Color(0xFFFF4359), // Sunset Glow (Coral to Peach)
+                        "#00C6FF,#0072FF" to Color(0xFF00C6FF), // Neon Blue (Cyan to Royal)
+                        "#E200FF,#7B1FA2" to Color(0xFFE200FF), // Cyber Purple (Magenta to Purple)
+                        "#11998E,#38EF7D" to Color(0xFF11998E), // Fresh Grass (Teal to Light Green)
+                        "#8E2DE2,#4A00E0" to Color(0xFF8E2DE2)  // Deep Violet (Violet to Blue)
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        colorPresets.forEach { (hex, clr) ->
+                        colorPresets.forEach { (hex, previewColor) ->
                             val isSelected = selectedColorHex.equals(hex, ignoreCase = true)
+                            val bkModifier = if (hex.contains(",")) {
+                                val colors = hex.split(",").map {
+                                    try {
+                                        Color(android.graphics.Color.parseColor(it.trim()))
+                                    } catch (e: Exception) {
+                                        Color(0xFF1E88E5)
+                                    }
+                                }
+                                Modifier.background(Brush.linearGradient(colors))
+                            } else {
+                                Modifier.background(previewColor)
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .size(34.dp)
                                     .clip(CircleShape)
-                                    .background(clr)
+                                    .then(bkModifier)
                                     .clickable { selectedColorHex = hex }
                                     .padding(4.dp),
                                 contentAlignment = Alignment.Center
@@ -3035,7 +3098,7 @@ fun OldSettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Phiên bản v2.0 • Ngô Thế Quân Vts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                    Text("Phiên bản v2.1 • Ngô Thế Quân Vts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                 }
             }
         }

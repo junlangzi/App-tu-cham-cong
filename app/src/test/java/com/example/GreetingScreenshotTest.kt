@@ -33,7 +33,7 @@ class GreetingScreenshotTest {
   @Test
   fun greeting_screenshot() {
     composeTestRule.setContent {
-      MyApplicationTheme(darkTheme = false, dynamicColor = false) {
+      MyApplicationTheme(darkTheme = false) {
         Surface(modifier = Modifier.fillMaxSize()) {
           Column(
             modifier = Modifier

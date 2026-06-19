@@ -39,7 +39,8 @@ fun MyApplicationTheme(
   content: @Composable () -> Unit,
 ) {
   val parsedColor = try {
-      Color(android.graphics.Color.parseColor(selectedColorHex))
+      val trimmedColor = if (selectedColorHex.contains(",")) selectedColorHex.split(",")[0].trim() else selectedColorHex.trim()
+      Color(android.graphics.Color.parseColor(trimmedColor))
   } catch (e: Exception) {
       Color(0xFF1E88E5) // Fallback to blue
   }

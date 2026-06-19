@@ -28,7 +28,8 @@ data class Job(
     val name: String,
     val rate: Double = 1.0, // Tỉ lệ công (e.g., 1.0, 1.1, 1.2, 0.5)
     val supportAmount: Double = 0.0, // Tiền hỗ trợ khâu (VND)
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
+    val position: Int = 0
 )
 
 @Entity(tableName = "monthly_supports")

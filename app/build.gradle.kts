@@ -14,8 +14,8 @@ android {
     applicationId = "com.aistudio.tuchamcong.gkjrpa"
     minSdk = 24
     targetSdk = 36
-    versionCode = 9
-    versionName = "1.9"
+    versionCode = 12
+    versionName = "2.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

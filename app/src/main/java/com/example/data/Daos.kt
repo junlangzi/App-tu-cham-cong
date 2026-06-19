@@ -17,10 +17,10 @@ interface UserConfigDao {
 
 @Dao
 interface JobDao {
-    @Query("SELECT * FROM jobs ORDER BY id ASC")
+    @Query("SELECT * FROM jobs ORDER BY position ASC, id ASC")
     fun getAllJobsFlow(): Flow<List<Job>>
 
-    @Query("SELECT * FROM jobs ORDER BY id ASC")
+    @Query("SELECT * FROM jobs ORDER BY position ASC, id ASC")
     suspend fun getAllJobsDirect(): List<Job>
 
     @Query("SELECT * FROM jobs WHERE id = :id")

@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
@@ -92,6 +94,14 @@ fun SettingsScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     var activeSettingSection by remember { mutableStateOf<String?>(null) }
+
+    BackHandler {
+        if (activeSettingSection != null) {
+            activeSettingSection = null
+        } else {
+            onBackToHome()
+        }
+    }
 
     // State bindings utilizing userConfig as refresh key
     var name by remember(userConfig) { mutableStateOf(userConfig.fullName) }
@@ -271,8 +281,8 @@ fun SettingsScreen(
                         
                         SettingMenuItem(
                             icon = Icons.Filled.AccountBalanceWallet,
-                            title = "Lương & Trợ cấp cơ bản",
-                            description = "Sửa mức lương ngày công, tiền ăn trưa mặc định",
+                            title = "Lương & phụ cấp",
+                            description = "Sửa mức lương ngày, tiền ăn trưa, xăng xe, điện thoại cố định...",
                             iconColor = Color(0xFF4CAF50),
                             onClick = { activeSettingSection = "salary" }
                         )
@@ -284,15 +294,6 @@ fun SettingsScreen(
                             description = "Thêm, sửa, xóa việc chấm công, tỷ lệ công, hỗ trợ khâu",
                             iconColor = Color(0xFF8E24AA),
                             onClick = { activeSettingSection = "jobs" }
-                        )
-                        Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.08f), modifier = Modifier.padding(horizontal = 14.dp))
-                        
-                        SettingMenuItem(
-                            icon = Icons.Filled.Stars,
-                            title = "Phụ cấp & Hỗ trợ tháng",
-                            description = "Thiết lập xăng xe, điện thoại cố định hàng tháng",
-                            iconColor = Color(0xFFFF9800),
-                            onClick = { activeSettingSection = "monthly_supports" }
                         )
                         Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.08f), modifier = Modifier.padding(horizontal = 14.dp))
                         
@@ -341,7 +342,7 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Phiên bản v2.0 • Ngô Thế Quân", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                        Text("Phiên bản v2.1 • Ngô Thế Quân", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                     }
                 }
             }
@@ -690,7 +691,7 @@ fun SettingsScreen(
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Quay lại")
                     }
                     Text(
-                        "Lương & Trợ cấp cơ bản",
+                        "Lương & phụ cấp",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -773,6 +774,77 @@ fun SettingsScreen(
             }
 
             item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Phụ cấp cố định tháng",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    IconButton(onClick = { showAddSupportDialog = true }) {
+                        Icon(Icons.Filled.AddCircle, "Thêm", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
+                    }
+                }
+            }
+
+            if (allMonthlySupports.isEmpty()) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f))
+                    ) {
+                        Text(
+                            "Không tìm thấy phụ cấp cố định nào. Sử dụng nút '+' ở trên để tạo mới xăng xe, điện thoại...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                items(allMonthlySupports) { support ->
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(support.name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = FormatHelper.formatVnd(support.amount),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = if (support.amount >= 0) MaterialTheme.colorScheme.primary else Color.Red
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    pendingConfigAction = PendingActionData(
+                                        "Bạn có chắc muốn xóa mục phụ cấp '${support.name}' này không?"
+                                    ) {
+                                        viewModel.deleteMonthlySupport(support.id)
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Filled.Delete, "Xóa", tint = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
                         val salary = dailySalaryStr.toDoubleOrNull() ?: userConfig.dailySalary
@@ -800,7 +872,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Filled.Check, null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Lưu mức lương & Trở về", fontWeight = FontWeight.Bold)
+                    Text("Lưu thiết lập & Trở về", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -849,7 +921,7 @@ fun SettingsScreen(
                     }
                 }
             } else {
-                items(allJobs) { job ->
+                itemsIndexed(allJobs) { index, job ->
                     Card(
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
@@ -869,7 +941,7 @@ fun SettingsScreen(
                                         fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodyMedium
                                     )
-                                    if (job.isDefault) {
+                                    if (job.isDefault && index > 0) {
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
                                             "mặc định", 
@@ -882,33 +954,78 @@ fun SettingsScreen(
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    "Hệ số: x${FormatHelper.formatRatio(job.rate)} công • Trợ cấp: ${FormatHelper.formatVnd(job.supportAmount)}",
-                                    fontSize = 11.5.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("Hệ số: ", fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("x${FormatHelper.formatRatio(job.rate)} công", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("Trợ cấp: ", fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(FormatHelper.formatVnd(job.supportAmount), fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                                }
                             }
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(onClick = { jobToEdit = job }) {
-                                    Icon(Icons.Filled.Edit, "Sửa", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-                                }
-                                IconButton(
-                                    onClick = {
-                                        pendingJobAction = PendingActionData(
-                                            "Bạn có muốn xóa vĩnh viễn công việc '${job.name}' này không?"
-                                        ) {
-                                            viewModel.deleteJob(job.id)
-                                        }
-                                    },
-                                    enabled = !job.isDefault
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(0.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Delete, 
-                                        contentDescription = "Xóa", 
-                                        modifier = Modifier.size(18.dp), 
-                                        tint = if (job.isDefault) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f) else MaterialTheme.colorScheme.error
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .clickable(enabled = index > 0) {
+                                                coroutineScope.launch {
+                                                    for (idx in allJobs.indices) {
+                                                        if (allJobs[idx].position != idx) {
+                                                            viewModel.updateJob(allJobs[idx].copy(position = idx))
+                                                        }
+                                                    }
+                                                    val jobCurrent = job
+                                                    val jobPrev = allJobs[index - 1]
+                                                    viewModel.updateJob(jobCurrent.copy(position = index - 1))
+                                                    viewModel.updateJob(jobPrev.copy(position = index))
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.KeyboardArrowUp,
+                                            contentDescription = "Di chuyển lên",
+                                            tint = if (index > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .clickable(enabled = index < allJobs.size - 1) {
+                                                coroutineScope.launch {
+                                                    for (idx in allJobs.indices) {
+                                                        if (allJobs[idx].position != idx) {
+                                                            viewModel.updateJob(allJobs[idx].copy(position = idx))
+                                                        }
+                                                    }
+                                                    val jobCurrent = job
+                                                    val jobNext = allJobs[index + 1]
+                                                    viewModel.updateJob(jobCurrent.copy(position = index + 1))
+                                                    viewModel.updateJob(jobNext.copy(position = index))
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.KeyboardArrowDown,
+                                            contentDescription = "Di chuyển xuống",
+                                            tint = if (index < allJobs.size - 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+
+                                IconButton(onClick = { jobToEdit = job }, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Filled.Edit, "Sửa", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
                         }
@@ -926,92 +1043,7 @@ fun SettingsScreen(
                 }
             }
         }
-        else if (activeSettingSection == "monthly_supports") {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { activeSettingSection = null }) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Quay lại")
-                        }
-                        Text(
-                            "Phụ cấp cố định tháng",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    IconButton(onClick = { showAddSupportDialog = true }) {
-                        Icon(Icons.Filled.AddCircle, "Thêm", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
-                    }
-                }
-            }
 
-            if (allMonthlySupports.isEmpty()) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f))
-                    ) {
-                        Text(
-                            "Không tìm thấy phụ cấp cố định nào. Sử dụng nút '+' ở trên để tạo mới xăng xe, điện thoại...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else {
-                items(allMonthlySupports) { support ->
-                    Card(
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(support.name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = FormatHelper.formatVnd(support.amount),
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = if (support.amount >= 0) MaterialTheme.colorScheme.primary else Color.Red
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    pendingConfigAction = PendingActionData(
-                                        "Bạn có chắc muốn xóa mục phụ cấp '${support.name}' này không?"
-                                    ) {
-                                        viewModel.deleteMonthlySupport(support.id)
-                                    }
-                                }
-                            ) {
-                                Icon(Icons.Filled.Delete, "Xóa", tint = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Button(
-                    onClick = { activeSettingSection = null },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Hoàn tất thiết lập phụ cấp", fontWeight = FontWeight.Bold)
-                }
-            }
-        }
         else if (activeSettingSection == "theme") {
             item {
                 Row(
@@ -1072,19 +1104,44 @@ fun SettingsScreen(
                             "#7B1FA2" to Color(0xFF7B1FA2), // Purple
                             "#C62828" to Color(0xFFC62828), // Ruby Red
                             "#EF6C00" to Color(0xFFEF6C00), // Orange
-                            "#37474F" to Color(0xFF37474F)  // Slate
+                            "#37474F" to Color(0xFF37474F),  // Slate
+                            "#FFD600" to Color(0xFFFFD600), // Gold/Yellow
+                            "#00C853" to Color(0xFF00C853), // Emerald Green
+                            "#FF2C8C" to Color(0xFFFF2C8C), // Rose/Pink
+                            "#607D8B" to Color(0xFF607D8B), // Slate Grey
+                            "#FF4359,#FF9F43" to Color(0xFFFF4359), // Sunset Glow (Coral to Peach)
+                            "#00C6FF,#0072FF" to Color(0xFF00C6FF), // Neon Blue (Cyan to Royal)
+                            "#E200FF,#7B1FA2" to Color(0xFFE200FF), // Cyber Purple (Magenta to Purple)
+                            "#11998E,#38EF7D" to Color(0xFF11998E), // Fresh Grass (Teal to Light Green)
+                            "#8E2DE2,#4A00E0" to Color(0xFF8E2DE2)  // Deep Violet (Violet to Blue)
                         )
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             colorPresets.forEach { (colorHex, previewColor) ->
                                 val isChosen = selectedColorHex.equals(colorHex, ignoreCase = true)
+                                val backgroundModifier = if (colorHex.contains(",")) {
+                                    val colors = colorHex.split(",").map {
+                                        try {
+                                            Color(android.graphics.Color.parseColor(it.trim()))
+                                        } catch (e: Exception) {
+                                            Color(0xFF1E88E5)
+                                        }
+                                    }
+                                    Modifier.background(Brush.linearGradient(colors))
+                                } else {
+                                    Modifier.background(previewColor)
+                                }
+
                                 Box(
                                     modifier = Modifier
-                                        .size(36.dp)
+                                        .size(38.dp)
                                         .clip(CircleShape)
-                                        .background(previewColor)
+                                        .then(backgroundModifier)
                                         .border(
                                             width = if (isChosen) 3.dp else 1.dp,
                                             color = if (isChosen) MaterialTheme.colorScheme.onSurface else Color.Transparent,
@@ -1528,7 +1585,17 @@ fun SettingsScreen(
                     viewModel.updateJob(jobToEdit!!.copy(name = name, rate = rate, supportAmount = support))
                     jobToEdit = null
                 }
-            }
+            },
+            onDelete = if (!jobToEdit!!.isDefault) {
+                {
+                    pendingJobAction = PendingActionData(
+                        "Bạn có chắn chắn muốn xóa vĩnh viễn công việc '${jobToEdit!!.name}' không?"
+                    ) {
+                        viewModel.deleteJob(jobToEdit!!.id)
+                        jobToEdit = null
+                    }
+                }
+            } else null
         )
     }
 
