@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [UserConfig::class, Job::class, WorkLog::class, MonthlySupport::class], version = 2, exportSchema = false)
+@Database(entities = [UserConfig::class, Job::class, WorkLog::class, MonthlySupport::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userConfigDao(): UserConfigDao
     abstract fun jobDao(): JobDao

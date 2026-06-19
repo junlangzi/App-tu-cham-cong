@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class AttendanceViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: AttendanceRepository
+    val repository: AttendanceRepository
 
     init {
         val database = AppDatabase.getDatabase(application)
@@ -63,6 +63,31 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
             initialValue = emptyList()
         )
 
+    fun getPreviousMonthString(currentMonthStr: String): String {
+        val parts = currentMonthStr.split("-")
+        if (parts.size == 2) {
+            val year = parts[0].toIntOrNull() ?: 2026
+            val month = parts[1].toIntOrNull() ?: 6
+            val cal = Calendar.getInstance().apply {
+                set(Calendar.YEAR, year)
+                set(Calendar.MONTH, month - 1 - 1)
+            }
+            return String.format(Locale.US, "%04d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1)
+        }
+        return currentMonthStr
+    }
+
+    // Logged entries for the previous month
+    val previousMonthlyLogs: StateFlow<List<WorkLog>> = _selectedMonth
+        .flatMapLatest { month ->
+            repository.getWorkLogsInMonth(getPreviousMonthString(month))
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     // Currently focused date for detail/edit, defaults to today "YYYY-MM-DD"
     private val _selectedDate = MutableStateFlow(getCurrentDateString())
     val selectedDate: StateFlow<String> = _selectedDate.asStateFlow()
@@ -97,12 +122,23 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    fun setSelectedMonth(year: Int, month: Int) {
+        _selectedMonth.value = String.format(Locale.US, "%04d-%02d", year, month)
+    }
+
     fun selectDate(date: String) {
         _selectedDate.value = date
         // Extract month from date to auto-scroll if needed
         val parts = date.split("-")
         if (parts.size == 3) {
             _selectedMonth.value = "${parts[0]}-${parts[1]}"
+        }
+    }
+
+    fun checkAndSetToday() {
+        val today = getCurrentDateString()
+        if (_selectedDate.value != today) {
+            selectDate(today)
         }
     }
 
@@ -115,7 +151,12 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         avatarUri: String? = null,
         avatarScale: Float = 1.0f,
         avatarOffsetX: Float = 0.0f,
-        avatarOffsetY: Float = 0.0f
+        avatarOffsetY: Float = 0.0f,
+        occupation: String = "Công nhân",
+        selectedColorHex: String = "#1E88E5",
+        selectedFontName: String = "Sử dụng mặc định",
+        appThemeMode: String = "SYSTEM",
+        monthActualSalaries: String = "{}"
     ) {
         viewModelScope.launch {
             val current = userConfig.value
@@ -128,7 +169,12 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
                 avatarUri = avatarUri,
                 avatarScale = avatarScale,
                 avatarOffsetX = avatarOffsetX,
-                avatarOffsetY = avatarOffsetY
+                avatarOffsetY = avatarOffsetY,
+                occupation = occupation,
+                selectedColorHex = selectedColorHex,
+                selectedFontName = selectedFontName,
+                appThemeMode = appThemeMode,
+                monthActualSalaries = monthActualSalaries
             )
         }
     }
@@ -211,13 +257,32 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    suspend fun exportBackup(
+        exportConfig: Boolean,
+        exportJobs: Boolean,
+        exportSupports: Boolean,
+        exportLogs: Boolean
+    ): String {
+        return repository.exportDataJson(exportConfig, exportJobs, exportSupports, exportLogs)
+    }
+
+    suspend fun importBackup(
+        jsonString: String,
+        importConfig: Boolean,
+        importJobs: Boolean,
+        importSupports: Boolean,
+        importLogs: Boolean
+    ): Boolean {
+        return repository.importDataJson(jsonString, importConfig, importJobs, importSupports, importLogs)
+    }
+
     // Helpers
-    private fun getCurrentMonthString(): String {
+    fun getCurrentMonthString(): String {
         val cal = Calendar.getInstance()
         return String.format(Locale.US, "%d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1)
     }
 
-    private fun getCurrentDateString(): String {
+    fun getCurrentDateString(): String {
         val cal = Calendar.getInstance()
         return String.format(Locale.US, "%d-%02d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH))
     }

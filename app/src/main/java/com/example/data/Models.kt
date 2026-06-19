@@ -14,7 +14,12 @@ data class UserConfig(
     val avatarUri: String? = null,
     val avatarScale: Float = 1.0f,
     val avatarOffsetX: Float = 0.0f,
-    val avatarOffsetY: Float = 0.0f
+    val avatarOffsetY: Float = 0.0f,
+    val occupation: String = "Công nhân",
+    val selectedColorHex: String = "#1E88E5",
+    val selectedFontName: String = "Sử dụng mặc định",
+    val appThemeMode: String = "SYSTEM",
+    val monthActualSalaries: String = "{}"
 )
 
 @Entity(tableName = "jobs")

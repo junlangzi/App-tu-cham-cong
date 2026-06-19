@@ -24,9 +24,15 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       val userConfig by viewModel.userConfig.collectAsStateWithLifecycle()
+      val isDark = when (userConfig.appThemeMode) {
+          "LIGHT" -> false
+          "DARK" -> true
+          else -> userConfig.isDarkMode || androidx.compose.foundation.isSystemInDarkTheme()
+      }
       MyApplicationTheme(
-        darkTheme = userConfig.isDarkMode,
-        dynamicColor = false
+        darkTheme = isDark,
+        selectedColorHex = userConfig.selectedColorHex,
+        selectedFontName = userConfig.selectedFontName
       ) {
         Surface(modifier = Modifier.fillMaxSize()) {
           MainLayout(viewModel = viewModel)

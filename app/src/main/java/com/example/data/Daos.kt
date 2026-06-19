@@ -34,12 +34,18 @@ interface JobDao {
 
     @Query("DELETE FROM jobs WHERE id = :id")
     suspend fun deleteJobById(id: Int)
+
+    @Query("DELETE FROM jobs")
+    suspend fun clearAllJobs()
 }
 
 @Dao
 interface WorkLogDao {
     @Query("SELECT * FROM work_logs ORDER BY date DESC")
     fun getAllWorkLogsFlow(): Flow<List<WorkLog>>
+
+    @Query("SELECT * FROM work_logs ORDER BY date DESC")
+    suspend fun getAllWorkLogsDirect(): List<WorkLog>
 
     @Query("SELECT * FROM work_logs WHERE date LIKE :monthPattern ORDER BY date ASC")
     fun getWorkLogsInMonthFlow(monthPattern: String): Flow<List<WorkLog>>
@@ -55,12 +61,18 @@ interface WorkLogDao {
 
     @Query("DELETE FROM work_logs WHERE date = :date")
     suspend fun deleteWorkLogByDate(date: String)
+
+    @Query("DELETE FROM work_logs")
+    suspend fun clearAllWorkLogs()
 }
 
 @Dao
 interface MonthlySupportDao {
     @Query("SELECT * FROM monthly_supports ORDER BY id ASC")
     fun getAllMonthlySupportsFlow(): Flow<List<MonthlySupport>>
+
+    @Query("SELECT * FROM monthly_supports ORDER BY id ASC")
+    suspend fun getAllMonthlySupportsDirect(): List<MonthlySupport>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMonthlySupport(support: MonthlySupport): Long
@@ -70,4 +82,7 @@ interface MonthlySupportDao {
 
     @Query("DELETE FROM monthly_supports WHERE id = :id")
     suspend fun deleteMonthlySupportById(id: Int)
+
+    @Query("DELETE FROM monthly_supports")
+    suspend fun clearAllMonthlySupports()
 }
