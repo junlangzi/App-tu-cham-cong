@@ -75,10 +75,6 @@ fun MainLayout(viewModel: AttendanceViewModel) {
     var showWorkLogDialog by remember { mutableStateOf(false) }
     var showMonthJumpDialog by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = currentTab == "stats") {
-        currentTab = "home"
-    }
-
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
@@ -198,65 +194,17 @@ fun MainLayout(viewModel: AttendanceViewModel) {
     }
 
     if (showMonthJumpDialog) {
-        var inputMonth by remember { mutableStateOf("") }
-        var inputYear by remember { mutableStateOf("") }
-        var errorText by remember { mutableStateOf("") }
+        val currentParts = selectedMonth.split("-")
+        val initialY = currentParts.getOrNull(0)?.toIntOrNull() ?: 2026
+        val initialM = currentParts.getOrNull(1)?.toIntOrNull() ?: 6
 
-        AlertDialog(
-            onDismissRequest = { showMonthJumpDialog = false },
-            title = { Text("Nhảy Đến Thời Gian", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Tự gõ chính xác tháng và năm để nhảy về thời gian đó:", style = MaterialTheme.typography.bodyMedium)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = inputMonth,
-                            onValueChange = {
-                                if (it.length <= 2 && it.all { c -> c.isDigit() }) inputMonth = it
-                            },
-                            label = { Text("Tháng (1-12)") },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                        )
-                        OutlinedTextField(
-                            value = inputYear,
-                            onValueChange = {
-                                if (it.length <= 4 && it.all { c -> c.isDigit() }) inputYear = it
-                            },
-                            label = { Text("Năm (VD: 2026)") },
-                            modifier = Modifier.weight(1.2f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                        )
-                    }
-                    if (errorText.isNotEmpty()) {
-                        Text(errorText, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val m = inputMonth.toIntOrNull()
-                        val y = inputYear.toIntOrNull()
-                        if (m != null && m in 1..12 && y != null && y in 1900..2100) {
-                            viewModel.setSelectedMonth(y, m)
-                            showMonthJumpDialog = false
-                            errorText = ""
-                        } else {
-                            errorText = "Vui lòng nhập Tháng (1-12) và Năm (1900-2100) hợp lệ!"
-                        }
-                    }
-                ) {
-                    Text("Đồng ý")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showMonthJumpDialog = false }) {
-                    Text("Hủy bỏ")
-                }
+        MonthYearPickerDialog(
+            initialYear = initialY,
+            initialMonth = initialM,
+            onDismiss = { showMonthJumpDialog = false },
+            onSelected = { y, m ->
+                viewModel.setSelectedMonth(y, m)
+                showMonthJumpDialog = false
             }
         )
     }
@@ -884,22 +832,38 @@ fun CalendarGridWidget(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     val isSunday = (c == 6)
+                                    val lunarData = LunarCalendar.convertSolar2Lunar(dayNumber, month, year)
+                                    val isHoliday = LunarCalendar.isVietnameseHoliday(dayNumber, month, lunarData.day, lunarData.month)
+
                                     Text(
                                         text = dayNumber.toString(),
-                                        fontSize = 14.sp,
-                                        fontWeight = if (isSelected || totalWorkRatio > 0 || isSunday) FontWeight.Bold else FontWeight.Normal,
+                                        fontSize = 13.sp,
+                                        fontWeight = if (isSelected || totalWorkRatio > 0 || isSunday || isHoliday) FontWeight.Bold else FontWeight.Normal,
                                         color = when {
                                             isSelected -> MaterialTheme.colorScheme.onPrimary
+                                            isHoliday -> Color(0xFFF57F17) // Gold-Yellow
                                             totalWorkRatio > 0 -> MaterialTheme.colorScheme.onPrimaryContainer
                                             isSunday -> Color.Red
                                             else -> MaterialTheme.colorScheme.onSurface
                                         }
                                     )
 
+                                    val lunarText = if (lunarData.day == 1) "${lunarData.day}/${lunarData.month}" else lunarData.day.toString()
+                                    Text(
+                                        text = lunarText,
+                                        fontSize = 8.sp,
+                                        fontWeight = if (isHoliday) FontWeight.Bold else FontWeight.Normal,
+                                        color = when {
+                                            isSelected -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                                            isHoliday -> Color(0xFFF57F17)
+                                            else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                                        }
+                                    )
+
                                     if (totalWorkRatio > 0) {
                                         Text(
                                             text = "${FormatHelper.formatRatio(totalWorkRatio)}c",
-                                            fontSize = 9.sp,
+                                            fontSize = 8.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary
                                         )
@@ -1024,6 +988,11 @@ fun StatsScreen(
     onDayClick: (String) -> Unit,
     onMonthClick: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    BackHandler {
+        (context as? android.app.Activity)?.finish()
+    }
+
     val monthTitle = try {
         val parts = selectedMonth.split("-")
         "${parts[1]}/${parts[0]}"
@@ -3098,7 +3067,7 @@ fun OldSettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Phiên bản v2.1 • Ngô Thế Quân Vts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                    Text("Phiên bản v2.4 • Ngô Thế Quân Vts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                 }
             }
         }
@@ -4252,4 +4221,120 @@ fun WorkLogEditorDialog(
             }
         )
     }
+}
+
+@Composable
+fun MonthYearPickerDialog(
+    initialYear: Int,
+    initialMonth: Int,
+    onDismiss: () -> Unit,
+    onSelected: (Int, Int) -> Unit
+) {
+    var selectedYear by remember { mutableStateOf(initialYear) }
+    var selectedMonth by remember { mutableStateOf(initialMonth) }
+    var typedYear by remember { mutableStateOf(initialYear.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Chọn Tháng Năm", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Year Selection Row with +/- buttons and manual typing
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(
+                        onClick = {
+                            selectedYear = (selectedYear - 1).coerceAtLeast(1900)
+                            typedYear = selectedYear.toString()
+                        }
+                    ) {
+                        Icon(Icons.Filled.ChevronLeft, "Giảm năm")
+                    }
+
+                    OutlinedTextField(
+                        value = typedYear,
+                        onValueChange = { newValue: String ->
+                            var isAllDigits = true
+                            for (i in 0 until newValue.length) {
+                                if (!newValue[i].isDigit()) {
+                                    isAllDigits = false
+                                }
+                            }
+                            if (newValue.length <= 4 && isAllDigits) {
+                                typedYear = newValue
+                                val parsed = newValue.toIntOrNull()
+                                if (parsed != null && parsed in 1900..2100) {
+                                    selectedYear = parsed
+                                }
+                            }
+                        },
+                        label = { Text("Năm") },
+                        modifier = Modifier.width(100.dp),
+                        singleLine = true,
+                        textStyle = androidx.compose.ui.text.TextStyle(textAlign = androidx.compose.ui.text.style.TextAlign.Center),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+
+                    IconButton(
+                        onClick = {
+                            selectedYear = (selectedYear + 1).coerceAtMost(2100)
+                            typedYear = selectedYear.toString()
+                        }
+                    ) {
+                        Icon(Icons.Filled.ChevronRight, "Tăng năm")
+                    }
+                }
+
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f))
+
+                // Months selection grid
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (row in 0..3) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            for (col in 1..3) {
+                                val m = row * 3 + col
+                                val isSelected = m == selectedMonth
+                                Button(
+                                    onClick = { selectedMonth = m },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.weight(1f).height(40.dp),
+                                    contentPadding = PaddingValues(0.dp)
+                                ) {
+                                    Text("Th. $m", fontSize = 13.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onSelected(selectedYear, selectedMonth)
+                }
+            ) {
+                Text("Đồng ý")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Hủy bỏ")
+            }
+        }
+    )
 }

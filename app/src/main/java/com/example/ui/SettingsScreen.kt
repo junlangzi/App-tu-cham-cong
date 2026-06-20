@@ -152,9 +152,42 @@ fun SettingsScreen(
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH) + 1
     var settlementMonth by remember { mutableStateOf(String.format(Locale.US, "%d-%02d", year, month)) }
+    var showSettlementMonthPicker by remember { mutableStateOf(false) }
     var settlementTotalReceivedStr by remember { mutableStateOf("") }
     var settlementCalculatedWage by remember { mutableStateOf<Double?>(null) }
     var settlementSuccessShow by remember { mutableStateOf(false) }
+    var showCancelSettlementConfirmDialog by remember { mutableStateOf(false) }
+
+    val isSettled = remember(userConfig.monthActualSalaries, settlementMonth) {
+        try {
+            val mapObj = org.json.JSONObject(userConfig.monthActualSalaries)
+            mapObj.has(settlementMonth)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    LaunchedEffect(settlementMonth, userConfig.monthActualSalaries, allJobs) {
+        try {
+            val mapObj = org.json.JSONObject(userConfig.monthActualSalaries)
+            if (mapObj.has(settlementMonth)) {
+                val settledRate = mapObj.getDouble(settlementMonth)
+                val logs = viewModel.repository.getWorkLogsInMonth(settlementMonth).firstOrNull() ?: emptyList()
+                var monthLaborUnits = 0.0
+                logs.forEach { log ->
+                    val j1 = allJobs.find { it.id == log.jobId1 }
+                    val j2 = allJobs.find { it.id == log.jobId2 }
+                    monthLaborUnits += ((j1?.rate ?: 0.0) * log.ratio1 + (j2?.rate ?: 0.0) * log.ratio2)
+                }
+                val totalAmt = settledRate * monthLaborUnits
+                settlementTotalReceivedStr = String.format(Locale.US, "%.0f", totalAmt)
+            } else {
+                settlementTotalReceivedStr = ""
+            }
+        } catch (e: Exception) {
+            settlementTotalReceivedStr = ""
+        }
+    }
 
     // Bulk Synchronize states
     var showSyncDialog by remember { mutableStateOf(false) }
@@ -342,7 +375,7 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Phiên bản v2.1 • Ngô Thế Quân", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                        Text("Phiên bản v2.4 • Ngô Thế Quân", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                     }
                 }
             }
@@ -1262,13 +1295,29 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            OutlinedTextField(
-                                value = settlementMonth,
-                                onValueChange = { settlementMonth = it },
-                                label = { Text("Tháng quyết toán (YYYY-MM)") },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { showSettlementMonthPicker = true }
+                            ) {
+                                OutlinedTextField(
+                                    value = settlementMonth,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    enabled = false,
+                                    label = { Text("Tháng quyết toán (YYYY-MM)") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    trailingIcon = {
+                                        Icon(Icons.Filled.DateRange, null, tint = MaterialTheme.colorScheme.primary)
+                                    },
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledTrailingIconColor = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                            }
                             IconButton(
                                 onClick = {
                                     settlementMonth = String.format(Locale.US, "%d-%02d", year, month)
@@ -1281,80 +1330,145 @@ fun SettingsScreen(
 
                         OutlinedTextField(
                             value = settlementTotalReceivedStr,
-                            onValueChange = { settlementTotalReceivedStr = it },
-                            label = { Text("Tổng số tiền mặt nhận được (VND)") },
+                            onValueChange = { if (!isSettled) settlementTotalReceivedStr = it },
+                            label = { Text(if (isSettled) "Tổng số tiền mặt đã quyết toán (VND)" else "Tổng số tiền mặt nhận được (VND)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
+                            readOnly = isSettled,
                             supportingText = {
                                 val amt = settlementTotalReceivedStr.toDoubleOrNull() ?: 0.0
                                 Text("Quy đổi: ${FormatHelper.formatVnd(amt)}")
                             }
                         )
 
-                        Button(
-                            onClick = {
-                                val totalAmt = settlementTotalReceivedStr.toDoubleOrNull()
-                                if (totalAmt != null && totalAmt > 0 && settlementMonth.length == 7) {
-                                    coroutineScope.launch {
-                                        val logs = viewModel.repository.getWorkLogsInMonth(settlementMonth).firstOrNull() ?: emptyList()
-                                        val jobs = viewModel.repository.getAllJobsDirect()
-                                        var monthLaborUnits = 0.0
-                                        logs.forEach { log ->
-                                            val j1 = jobs.find { it.id == log.jobId1 }
-                                            val j2 = jobs.find { it.id == log.jobId2 }
-                                            monthLaborUnits += ((j1?.rate ?: 0.0) * log.ratio1 + (j2?.rate ?: 0.0) * log.ratio2)
-                                        }
-                                        if (monthLaborUnits > 0) {
-                                            val calculated = totalAmt / monthLaborUnits
-                                            settlementCalculatedWage = calculated
-                                            
-                                            val currentConfig = viewModel.userConfig.value
-                                            val mapObj = try {
-                                                org.json.JSONObject(currentConfig.monthActualSalaries)
-                                            } catch (e: Exception) {
-                                                org.json.JSONObject()
+                        if (!isSettled) {
+                            Button(
+                                onClick = {
+                                    val totalAmt = settlementTotalReceivedStr.toDoubleOrNull()
+                                    if (totalAmt != null && totalAmt > 0 && settlementMonth.length == 7) {
+                                        coroutineScope.launch {
+                                            val logs = viewModel.repository.getWorkLogsInMonth(settlementMonth).firstOrNull() ?: emptyList()
+                                            val jobs = viewModel.repository.getAllJobsDirect()
+                                            var monthLaborUnits = 0.0
+                                            logs.forEach { log ->
+                                                val j1 = jobs.find { it.id == log.jobId1 }
+                                                val j2 = jobs.find { it.id == log.jobId2 }
+                                                monthLaborUnits += ((j1?.rate ?: 0.0) * log.ratio1 + (j2?.rate ?: 0.0) * log.ratio2)
                                             }
-                                            mapObj.put(settlementMonth, calculated)
+                                            if (monthLaborUnits > 0) {
+                                                val calculated = totalAmt / monthLaborUnits
+                                                settlementCalculatedWage = calculated
+                                                
+                                                val currentConfig = viewModel.userConfig.value
+                                                val mapObj = try {
+                                                    org.json.JSONObject(currentConfig.monthActualSalaries)
+                                                } catch (e: Exception) {
+                                                    org.json.JSONObject()
+                                                }
+                                                mapObj.put(settlementMonth, calculated)
 
-                                            viewModel.updateProfile(
-                                                fullName = currentConfig.fullName,
-                                                avatarName = currentConfig.avatarName,
-                                                dailySalary = currentConfig.dailySalary,
-                                                dailyMealAllowance = currentConfig.dailyMealAllowance,
-                                                avatarUri = currentConfig.avatarUri,
-                                                avatarScale = currentConfig.avatarScale,
-                                                avatarOffsetX = currentConfig.avatarOffsetX,
-                                                avatarOffsetY = currentConfig.avatarOffsetY,
-                                                occupation = currentConfig.occupation,
-                                                selectedColorHex = currentConfig.selectedColorHex,
-                                                selectedFontName = currentConfig.selectedFontName,
-                                                appThemeMode = currentConfig.appThemeMode,
-                                                monthActualSalaries = mapObj.toString()
-                                            )
-                                            settlementSuccessShow = true
-                                        } else {
-                                            restoreErrorMsg = "Tháng này chưa chấm ngày làm công nào để tính quyết toán."
+                                                viewModel.updateProfile(
+                                                    fullName = currentConfig.fullName,
+                                                    avatarName = currentConfig.avatarName,
+                                                    dailySalary = currentConfig.dailySalary,
+                                                    dailyMealAllowance = currentConfig.dailyMealAllowance,
+                                                    avatarUri = currentConfig.avatarUri,
+                                                    avatarScale = currentConfig.avatarScale,
+                                                    avatarOffsetX = currentConfig.avatarOffsetX,
+                                                    avatarOffsetY = currentConfig.avatarOffsetY,
+                                                    occupation = currentConfig.occupation,
+                                                    selectedColorHex = currentConfig.selectedColorHex,
+                                                    selectedFontName = currentConfig.selectedFontName,
+                                                    appThemeMode = currentConfig.appThemeMode,
+                                                    monthActualSalaries = mapObj.toString()
+                                                )
+                                                settlementSuccessShow = true
+                                            } else {
+                                                restoreErrorMsg = "Tháng này chưa chấm ngày làm công nào để tính quyết toán."
+                                            }
                                         }
+                                    } else {
+                                        restoreErrorMsg = "Vui lòng nhập số tiền thực lĩnh hợp lệ và tháng YYYY-MM."
                                     }
-                                } else {
-                                    restoreErrorMsg = "Vui lòng nhập số tiền thực lĩnh hợp lệ và tháng YYYY-MM."
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().testTag("settlement_btn")
-                        ) {
-                            Icon(Icons.Filled.Calculate, "Tính toán")
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Quyết toán & Cập nhật")
+                                },
+                                modifier = Modifier.fillMaxWidth().testTag("settlement_btn")
+                            ) {
+                                Icon(Icons.Filled.Calculate, "Tính toán")
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Quyết toán & Cập nhật")
+                            }
                         }
 
-                        val currentSettleRate = getDailySalaryForMonth(userConfig, settlementMonth)
-                        if (currentSettleRate != userConfig.dailySalary) {
+                        if (isSettled) {
+                            val currentSettleRate = getDailySalaryForMonth(userConfig, settlementMonth)
                             Text(
                                 "✓ Tháng ${settlementMonth} đang áp dụng đơn giá quyết toán: ${FormatHelper.formatVnd(currentSettleRate)}/công.",
                                 color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            OutlinedButton(
+                                onClick = {
+                                    showCancelSettlementConfirmDialog = true
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Filled.Delete, "Hủy quyết toán")
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Hủy quyết toán")
+                            }
+                        }
+
+                        if (showCancelSettlementConfirmDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showCancelSettlementConfirmDialog = false },
+                                title = { Text("Hủy quyết toán") },
+                                text = { Text("Bạn có chắc chắn muốn hủy quyết toán cho tháng $settlementMonth không?") },
+                                confirmButton = {
+                                    TextButton(
+                                        onClick = {
+                                            showCancelSettlementConfirmDialog = false
+                                            coroutineScope.launch {
+                                                val currentConfig = viewModel.userConfig.value
+                                                val mapObj = try {
+                                                    org.json.JSONObject(currentConfig.monthActualSalaries)
+                                                } catch (e: Exception) {
+                                                    org.json.JSONObject()
+                                                }
+                                                mapObj.remove(settlementMonth)
+
+                                                viewModel.updateProfile(
+                                                    fullName = currentConfig.fullName,
+                                                    avatarName = currentConfig.avatarName,
+                                                    dailySalary = currentConfig.dailySalary,
+                                                    dailyMealAllowance = currentConfig.dailyMealAllowance,
+                                                    avatarUri = currentConfig.avatarUri,
+                                                    avatarScale = currentConfig.avatarScale,
+                                                    avatarOffsetX = currentConfig.avatarOffsetX,
+                                                    avatarOffsetY = currentConfig.avatarOffsetY,
+                                                    occupation = currentConfig.occupation,
+                                                    selectedColorHex = currentConfig.selectedColorHex,
+                                                    selectedFontName = currentConfig.selectedFontName,
+                                                    appThemeMode = currentConfig.appThemeMode,
+                                                    monthActualSalaries = mapObj.toString()
+                                                )
+                                                settlementCalculatedWage = null
+                                            }
+                                        }
+                                    ) {
+                                        Text("Đồng ý", color = MaterialTheme.colorScheme.error)
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showCancelSettlementConfirmDialog = false }) {
+                                        Text("Bỏ qua")
+                                    }
+                                }
                             )
                         }
                     }
@@ -1450,6 +1564,22 @@ fun SettingsScreen(
     }
 
     // Modal dialogs setup supporting modular section triggers
+    if (showSettlementMonthPicker) {
+        val currentParts = settlementMonth.split("-")
+        val initialY = currentParts.getOrNull(0)?.toIntOrNull() ?: year
+        val initialM = currentParts.getOrNull(1)?.toIntOrNull() ?: month
+
+        MonthYearPickerDialog(
+            initialYear = initialY,
+            initialMonth = initialM,
+            onDismiss = { showSettlementMonthPicker = false },
+            onSelected = { y, m ->
+                settlementMonth = String.format(Locale.US, "%d-%02d", y, m)
+                showSettlementMonthPicker = false
+            }
+        )
+    }
+
     if (showSyncDialog) {
         AlertDialog(
             onDismissRequest = { showSyncDialog = false },
