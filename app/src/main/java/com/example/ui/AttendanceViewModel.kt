@@ -156,7 +156,8 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
         selectedColorHex: String = "#1E88E5",
         selectedFontName: String = "Sử dụng mặc định",
         appThemeMode: String = "SYSTEM",
-        monthActualSalaries: String = "{}"
+        monthActualSalaries: String = "{}",
+        selectedLunarColorHex: String = "#FF9800"
     ) {
         viewModelScope.launch {
             val current = userConfig.value
@@ -174,7 +175,8 @@ class AttendanceViewModel(application: Application) : AndroidViewModel(applicati
                 selectedColorHex = selectedColorHex,
                 selectedFontName = selectedFontName,
                 appThemeMode = appThemeMode,
-                monthActualSalaries = monthActualSalaries
+                monthActualSalaries = monthActualSalaries,
+                selectedLunarColorHex = selectedLunarColorHex
             )
         }
     }

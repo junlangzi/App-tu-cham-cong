@@ -6,226 +6,169 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- DROP SHADOW FOR CALENDAR BASE -->
-    <path
-        android:fillColor="#3A000000"
-        android:pathData="M 18,34 H 82 C 85.3,34 88,36.7 88,40 V 80 C 88,83.3 85.3,86 82,86 H 18 C 14.7,86 12,83.3 12,80 V 40 C 12,36.7 14.7,34 18,34 Z" />
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.75"
+        android:scaleY="0.75">
 
-    <!-- CALENDAR BASE SHEET WITH SHINY GRADIENT -->
-    <path
-        android:pathData="M 16,32 C 16,28.7 18.7,26 22,26 H 78 C 81.3,26 84,28.7 84,32 V 76 C 84,79.3 81.3,82 78,82 H 22 C 18.7,82 16,79.3 16,76 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="16"
-                android:startY="26"
-                android:endX="84"
-                android:endY="82">
-                <item android:offset="0.0" android:color="#FFFFFF" />
-                <item android:offset="0.3" android:color="#FAFAFA" />
-                <item android:offset="1.0" android:color="#F0F4FC" /> <!-- Extra crisp premium blue tint -->
-            </gradient>
-        </aapt:attr>
-    </path>
+        <!-- OVERALL SHADOW BACKDROP FOR THE ENTIRE BADGE -->
+        <!-- This creates a beautiful 3D float shadow on the background -->
+        <path
+            android:fillColor="#1F1A243F"
+            android:pathData="M 34,17.5 H 74 A 18,18 0 0 1 92,35.5 V 75.5 A 18,18 0 0 1 74,93.5 H 34 A 18,18 0 0 1 16,75.5 V 35.5 A 18,18 0 0 1 34,17.5 Z" />
+        <path
+            android:fillColor="#15000000"
+            android:pathData="M 34,16.5 H 74 A 18,18 0 0 1 92,34.5 V 74.5 A 18,18 0 0 1 74,92.5 H 34 A 18,18 0 0 1 16,74.5 V 34.5 A 18,18 0 0 1 34,16.5 Z" />
 
-    <!-- CALENDAR TOP BAR HEADER (CORAL RED GRADIENT) -->
-    <path
-        android:pathData="M 16,32 C 16,28.7 18.7,26 22,26 H 78 C 81.3,26 84,28.7 84,32 V 42 H 16 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="16"
-                android:startY="26"
-                android:endX="84"
-                android:endY="42">
-                <item android:offset="0.0" android:color="#FF5D68" /> <!-- Vibrant pastel coral pink-red -->
-                <item android:offset="1.0" android:color="#E03040" /> <!-- Deeper coral crimson -->
-            </gradient>
-        </aapt:attr>
-    </path>
+        <!-- CLIPPING ZONE FOR THE FOUR SECTIONS (Perfect Symmetrical Squircle) -->
+        <clip-path
+            android:pathData="M 34,16 H 74 A 18,18 0 0 1 92,34 V 74 A 18,18 0 0 1 74,92 H 34 A 18,18 0 0 1 16,74 V 34 A 18,18 0 0 1 34,16 Z" />
 
-    <!-- CALENDAR BINDING RINGS (CUTE GLOSSY CYLINDRICAL HOOKS) -->
-    <!-- Left Ring Outer -->
-    <path
-        android:pathData="M 29,15 C 29,11.5 35,11.5 35,15 V 25 C 35,28.5 29,28.5 29,25 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="29"
-                android:startY="12"
-                android:endX="35"
-                android:endY="28">
-                <item android:offset="0.0" android:color="#E0F7FA" />
-                <item android:offset="0.5" android:color="#80DEEA" /> <!-- Glossy cyan binder -->
-                <item android:offset="1.0" android:color="#00838F" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <!-- Left Ring Inner Cutout / Hole Shadow -->
-    <path
-        android:fillColor="#3E2723"
-        android:fillAlpha="0.12"
-        android:pathData="M 31,18 H 33 A 1,1 0 0,1 34,19 V 23 A 1,1 0 0,1 33,24 H 31 A 1,1 0 0,1 30,23 V 19 A 1,1 0 0,1 31,18 Z" />
+        <!-- ========================================== -->
+        <!-- 1. GREEN PIECE (Top-Left Segment)         -->
+        <!-- ========================================== -->
+        <!-- Main Green block with premium gradient -->
+        <path
+            android:pathData="M 14,14 H 76.5 V 108 H 14 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="16"
+                    android:startY="16"
+                    android:endX="65"
+                    android:endY="65">
+                    <item android:offset="0.0" android:color="#4DE189" />
+                    <item android:offset="1.0" android:color="#0D9643" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <!-- Highlight Overlay -->
+        <path
+            android:strokeColor="#35FFFFFF"
+            android:strokeWidth="1.2"
+            android:pathData="M 16,74 V 34 A 18,18 0 0 1 34,16 H 76.5" />
 
-    <!-- Right Ring Outer -->
-    <path
-        android:pathData="M 65,15 C 65,11.5 71,11.5 71,15 V 25 C 71,28.5 65,28.5 65,25 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="65"
-                android:startY="12"
-                android:endX="71"
-                android:endY="28">
-                <item android:offset="0.0" android:color="#E0F7FA" />
-                <item android:offset="0.5" android:color="#80DEEA" /> <!-- Glossy cyan binder -->
-                <item android:offset="1.0" android:color="#00838F" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <!-- Right Ring Inner Cutout / Hole Shadow -->
-    <path
-        android:fillColor="#3E2723"
-        android:fillAlpha="0.12"
-        android:pathData="M 67,18 H 69 A 1,1 0 0,1 70,19 V 23 A 1,1 0 0,1 69,24 H 67 A 1,1 0 0,1 66,23 V 19 A 1,1 0 0,1 67,18 Z" />
 
-    <!-- CALENDAR GRID CELLS (PASTEL COLORS) -->
-    <!-- Row 1, Column 1: Turquoise Cyan Cell -->
-    <path
-        android:fillColor="#26C6DA"
-        android:pathData="M 23,46 H 30 A 2,2 0 0,1 32,48 V 51 A 2,2 0 0,1 30,53 H 23 A 2,2 0 0,1 21,51 V 48 A 2,2 0 0,1 23,46 Z" />
-    <!-- Row 1, Column 2: Warm Pastel Yellow Cell -->
-    <path
-        android:fillColor="#FFCA28"
-        android:pathData="M 33,46 H 40 A 2,2 0 0,1 42,48 V 51 A 2,2 0 0,1 40,53 H 33 A 2,2 0 0,1 31,51 V 48 A 2,2 0 0,1 33,46 Z" />
-    <!-- Row 1, Column 3: Candy Soft Rose Pink Cell -->
-    <path
-        android:fillColor="#FF62B5"
-        android:pathData="M 43,46 H 50 A 2,2 0 0,1 52,48 V 51 A 2,2 0 0,1 50,53 H 43 A 2,2 0 0,1 41,51 V 48 A 2,2 0 0,1 43,46 Z" />
-    <!-- Row 1, Column 4: Plain soft grey placeholder -->
-    <path
-        android:fillColor="#ECEFF1"
-        android:pathData="M 53,46 H 60 A 2,2 0 0,1 62,48 V 51 A 2,2 0 0,1 60,53 H 53 A 2,2 0 0,1 51,51 V 48 A 2,2 0 0,1 53,46 Z" />
-    <!-- Row 1, Column 5: Plain soft grey placeholder -->
-    <path
-        android:fillColor="#ECEFF1"
-        android:pathData="M 63,46 H 70 A 2,2 0 0,1 72,48 V 51 A 2,2 0 0,1 70,53 H 63 A 2,2 0 0,1 61,51 V 48 A 2,2 0 0,1 63,46 Z" />
+        <!-- ========================================== -->
+        <!-- 2. YELLOW PIECE (Diagonal Center Band)    -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under Yellow -->
+        <path
+            android:fillColor="#1F1A2005"
+            android:pathData="M 14,76 L 76,14 H 94 L 14,94 Z" />
+        <!-- Main Yellow block with premium gradient -->
+        <path
+            android:pathData="M 14,77.5 L 77.5,14 H 94 L 14,94 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="16"
+                    android:startY="45"
+                    android:endX="92"
+                    android:endY="92">
+                    <item android:offset="0.0" android:color="#FFE852" />
+                    <item android:offset="1.0" android:color="#D69800" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
-    <!-- Row 2, Column 1: Spring Pastel Green Cell -->
-    <path
-        android:fillColor="#66BB6A"
-        android:pathData="M 23,56 H 30 A 2,2 0 0,1 32,58 V 61 A 2,2 0 0,1 30,63 H 23 A 2,2 0 0,1 21,61 V 58 A 2,2 0 0,1 23,56 Z" />
-    <!-- Row 2, Column 2: Gorgeous Sky-Marine Blue Cell -->
-    <path
-        android:fillColor="#42A5F5"
-        android:pathData="M 33,56 H 40 A 2,2 0 0,1 42,58 V 61 A 2,2 0 0,1 40,63 H 33 A 2,2 0 0,1 31,61 V 58 A 2,2 0 0,1 33,56 Z" />
-    <!-- Row 2, Column 3: Mint cell with a large checkmark -->
-    <path
-        android:fillColor="#E8F5E9"
-        android:pathData="M 43,56 H 50 A 2,2 0 0,1 52,58 V 61 A 2,2 0 0,1 50,63 H 43 A 2,2 0 0,1 41,61 V 58 A 2,2 0 0,1 43,56 Z" />
-    <!-- Big Green Attended Tick status in Row 2, Col 3 -->
-    <path
-        android:strokeColor="#2E7D32"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M 44.5,58.8 L 46.8,61 L 50.5,57.2" />
 
-    <!-- Row 2, Column 4: Plain soft grey placeholder -->
-    <path
-        android:fillColor="#ECEFF1"
-        android:pathData="M 53,56 H 60 A 2,2 0 0,1 62,58 V 61 A 2,2 0 0,1 60,63 H 53 A 2,2 0 0,1 51,61 V 58 A 2,2 0 0,1 53,56 Z" />
+        <!-- ========================================== -->
+        <!-- 3. RED PIECE (Top-Right Segment)           -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under Red -->
+        <path
+            android:fillColor="#1F1A0505"
+            android:pathData="M 76.5,14 H 94 V 31.5 Z" />
+        <!-- Main Red block with premium gradient -->
+        <path
+            android:pathData="M 77,14 H 94 V 31 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="77"
+                    android:startY="14"
+                    android:endX="94"
+                    android:endY="31">
+                    <item android:offset="0.0" android:color="#FC6E6E" />
+                    <item android:offset="1.0" android:color="#D41B1B" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
-    <!-- Row 3, Column 1: Plain soft grey placeholder -->
-    <path
-        android:fillColor="#ECEFF1"
-        android:pathData="M 23,66 H 30 A 2,2 0 0,1 32,68 V 71 A 2,2 0 0,1 30,73 H 23 A 2,2 0 0,1 21,71 V 68 A 2,2 0 0,1 23,66 Z" />
-    <!-- Row 3, Column 2: Plain soft grey placeholder -->
-    <path
-        android:fillColor="#ECEFF1"
-        android:pathData="M 33,66 H 40 A 2,2 0 0,1 42,68 V 71 A 2,2 0 0,1 40,73 H 33 A 2,2 0 0,1 31,71 V 68 A 2,2 0 0,1 33,66 Z" />
-    <!-- Row 3, Column 3: Plain soft grey placeholder -->
-    <path
-        android:fillColor="#ECEFF1"
-        android:pathData="M 43,66 H 50 A 2,2 0 0,1 52,68 V 71 A 2,2 0 0,1 50,73 H 43 A 2,2 0 0,1 41,71 V 68 A 2,2 0 0,1 43,66 Z" />
 
-    <!-- OVERLAPPING ANALOG CLOCK (BOTTOM-RIGHT SIDE OF CANVAS) -->
-    <!-- Center coordinate: X=74, Y=62. Radius=22. Left=52, Right=96, Top=40, Bottom=84 -->
-    <!-- Clock shadow -->
-    <path
-        android:fillColor="#22000000"
-        android:pathData="M 51,63 A 23,23 0 1,0 97,63 A 23,23 0 1,0 51,63 Z" />
+        <!-- ========================================== -->
+        <!-- 4. BLUE PIECE (Bottom-Right Segment)       -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under Blue -->
+        <path
+            android:fillColor="#2206152F"
+            android:pathData="M 29.5,94 L 94,29.5 V 94 Z" />
+        <!-- Main Blue block with premium gradient -->
+        <path
+            android:pathData="M 29,94 L 94,29 V 94 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="29"
+                    android:startY="29"
+                    android:endX="94"
+                    android:endY="94">
+                    <item android:offset="0.0" android:color="#59AAFC" />
+                    <item android:offset="1.0" android:color="#1452D8" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <!-- Highlight Overlay for Blue -->
+        <path
+            android:strokeColor="#25FFFFFF"
+            android:strokeWidth="1.2"
+            android:pathData="M 92,34 V 74 A 18,18 0 0 1 74,92 H 34" />
 
-    <!-- Outer Bezel Ring (Sky-Blue Gradient) -->
-    <path
-        android:pathData="M 52,62 A 22,22 0 1,0 96,62 A 22,22 0 1,0 52,62 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="52"
-                android:startY="40"
-                android:endX="96"
-                android:endY="84">
-                <item android:offset="0.0" android:color="#7ADCFF" /> <!-- Light bright cyan ring -->
-                <item android:offset="0.5" android:color="#3696FF" /> <!-- Mid cyan-blue -->
-                <item android:offset="1.0" android:color="#1965FF" /> <!-- Pure royal cobalt blue -->
-            </gradient>
-        </aapt:attr>
-    </path>
 
-    <!-- Shiny gloss inner ring border to emulate glass highlight -->
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="0.8"
-        android:strokeAlpha="0.7"
-        android:pathData="M 55.4,62 A 18.6,18.6 0 1,0 92.6,62 A 18.6,18.6 0 1,0 55.4,62 Z" />
+        <!-- ========================================== -->
+        <!-- 5. 3D HOLE IN RED PIECE                    -->
+        <!-- ========================================== -->
+        <!-- Depth shadow of the hole -->
+        <path
+            android:fillColor="#3A000000"
+            android:pathData="M 84,21 A 4,4 0 1 0 84,29 A 4,4 0 1 0 84,21 Z" />
+        <!-- Bottom material visible inside the hole (blends with background) -->
+        <path
+            android:fillColor="#F4F5F8"
+            android:pathData="M 84,21.5 A 3.5,3.5 0 1 0 84,28.5 A 3.5,3.5 0 1 0 84,21.5 Z" />
+        <!-- Inner ambient occlusion shadow ring -->
+        <path
+            android:strokeColor="#1F000000"
+            android:strokeWidth="0.8"
+            android:pathData="M 84,21.5 A 3.5,3.5 0 1 0 84,28.5 A 3.5,3.5 0 1 0 84,21.5 Z" />
 
-    <!-- Main Inner White Clock Face / Dial -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M 56,62 A 18,18 0 1,0 92,62 A 18,18 0 1,0 56,62 Z" />
 
-    <!-- HOUR TICKS ON THE CLOCK DIAL -->
-    <!-- 12 o'clock -->
-    <path android:strokeColor="#B0BEC5" android:strokeWidth="0.8" android:pathData="M 74,45.5 L 74,47.5" />
-    <!-- 3 o'clock -->
-    <path android:strokeColor="#B0BEC5" android:strokeWidth="0.8" android:pathData="M 90.5,62 L 88.5,62" />
-    <!-- 6 o'clock -->
-    <path android:strokeColor="#B0BEC5" android:strokeWidth="0.8" android:pathData="M 74,78.5 L 74,76.5" />
-    <!-- 9 o'clock -->
-    <path android:strokeColor="#B0BEC5" android:strokeWidth="0.8" android:pathData="M 57.5,62 L 59.5,62" />
-    <!-- Intermediate hour ticks for beautiful realism -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 82.5,47.2 L 81.5,48.9" /> <!-- 1 -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 88.8,53.5 L 87.1,54.5" /> <!-- 2 -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 88.8,70.5 L 87.1,69.5" /> <!-- 4 -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 82.5,76.8 L 81.5,75.1" /> <!-- 5 -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 65.5,76.8 L 66.5,75.1" /> <!-- 7 -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 59.2,70.5 L 60.9,69.5" /> <!-- 8 -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 59.2,53.5 L 60.9,54.5" /> <!-- 10 -->
-    <path android:strokeColor="#CFD8DC" android:strokeWidth="0.7" android:pathData="M 65.5,47.2 L 66.5,48.9" /> <!-- 11 -->
+        <!-- ========================================== -->
+        <!-- 6. GLOSSY SPARKLE ON BLUE CORNER           -->
+        <!-- ========================================== -->
+        <path
+            android:fillColor="#C5FFFFFF"
+            android:pathData="M 78,73 Q 78,77 82,77 Q 78,77 78,81 Q 78,77 74,77 Q 78,77 78,73 Z" />
 
-    <!-- CLOCK HANDS (STRIKING 3D DESIGN) -->
-    <!-- Short Hour Hand (Sky Blue, pointing southwest towards 8:20, approx 220deg) -->
-    <path
-        android:strokeColor="#2196F3"
-        android:strokeWidth="3.2"
-        android:strokeLineCap="round"
-        android:pathData="M 74,62 L 65.5,68.5" />
 
-    <!-- Long Minute Hand (Vibrant Coral Red, pointing northeast towards 2:10, approx 325deg) -->
-    <path
-        android:strokeColor="#FF4B55"
-        android:strokeWidth="3.2"
-        android:strokeLineCap="round"
-        android:pathData="M 74,62 L 85.5,51.5" />
+        <!-- ========================================== -->
+        <!-- 7. 3D WHITE LETTER 'V' IN EXACT CENTER     -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under 'V' -->
+        <path
+            android:fillColor="#24000000"
+            android:pathData="M 34,34.5 H 45 L 54,54.5 L 63,34.5 H 74 L 59,74.5 H 49 Z" />
+        <!-- 3D Bevel/Extrusion Gray Highlight layer -->
+        <path
+            android:fillColor="#DCE0E6"
+            android:pathData="M 34,33.8 H 45 L 54,53.8 L 63,33.8 H 74 L 59,73.8 H 49 Z" />
+        <!-- Pure White Surface layer -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 34,33 H 45 L 54,53 L 63,33 H 74 L 59,73 H 49 Z" />
 
-    <!-- Polished Center Pin Cap (Gold/Yellow 3D button) -->
-    <path
-        android:fillColor="#FFCA28"
-        android:pathData="M 70.8,62 A 3.2,3.2 0 1,0 77.2,62 A 3.2,3.2 0 1,0 70.8,62 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.6"
-        android:pathData="M 72.8,61 A 1.0,1.0 0 1,0 74.8,61 A 1.0,1.0 0 1,0 72.8,61 Z" />
+    </group>
 
 </vector>

@@ -26,6 +26,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTransformGestures
 import coil.compose.AsyncImage
 import com.example.data.UserConfig
 import com.example.data.Job
@@ -110,6 +112,8 @@ fun SettingsScreen(
     var defaultMealStr by remember(userConfig) { mutableStateOf(userConfig.dailyMealAllowance.toInt().toString()) }
     var selectedAvatarName by remember(userConfig) { mutableStateOf(userConfig.avatarName) }
 
+    var isEditingInfo by remember { mutableStateOf(false) }
+
     var pendingConfigAction by remember { mutableStateOf<PendingActionData?>(null) }
     var pendingJobAction by remember { mutableStateOf<PendingActionData?>(null) }
 
@@ -120,6 +124,7 @@ fun SettingsScreen(
     var isLibraryMode by remember(userConfig) { mutableStateOf(userConfig.avatarUri != null) }
 
     var selectedColorHex by remember(userConfig) { mutableStateOf(userConfig.selectedColorHex) }
+    var selectedLunarColorHex by remember(userConfig) { mutableStateOf(userConfig.selectedLunarColorHex) }
     var selectedFontName by remember(userConfig) { mutableStateOf(userConfig.selectedFontName) }
     var appThemeMode by remember(userConfig) { mutableStateOf(userConfig.appThemeMode) }
 
@@ -216,7 +221,7 @@ fun SettingsScreen(
     var backupErrorMsg by remember { mutableStateOf<String?>(null) }
     var restoreSuccessShow by remember { mutableStateOf(false) }
     var restoreErrorMsg by remember { mutableStateOf<String?>(null) }
-    var saveSuccessShow by remember { mutableStateOf(false) }
+    var saveSuccessMsg by remember { mutableStateOf<String?>(null) }
 
     // Job sub-states
     var showAddJobDialog by remember { mutableStateOf(false) }
@@ -367,15 +372,8 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            "Được thiết kế riêng để tối ưu hóa quản lý ngày làm công, trợ cấp xăng xe điện thoại, và tự động quyết toán tiền thực lĩnh cực kỳ thông thái.",
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                        )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Phiên bản v2.4 • Ngô Thế Quân", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                        Text("Phiên bản v2.9 • Ngô Thế Quân", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                     }
                 }
             }
@@ -409,12 +407,36 @@ fun SettingsScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            Text("Thông tin cá nhân", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.secondary, modifier = Modifier.weight(1f))
+                            if (!isEditingInfo) {
+                                TextButton(
+                                    onClick = { isEditingInfo = true },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Chỉnh sửa", fontSize = 12.sp)
+                                }
+                            } else {
+                                TextButton(
+                                    onClick = { isEditingInfo = false },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Hoàn tất", fontSize = 12.sp)
+                                }
+                            }
+                        }
+
                         OutlinedTextField(
                             value = name,
                             onValueChange = { name = it },
                             label = { Text("Họ và tên") },
                             modifier = Modifier.fillMaxWidth().testTag("settings_name_input"),
-                            singleLine = true
+                            singleLine = true,
+                            enabled = isEditingInfo
                         )
 
                         OutlinedTextField(
@@ -422,7 +444,8 @@ fun SettingsScreen(
                             onValueChange = { occupation = it },
                             label = { Text("Nghề nghiệp / Chức vụ") },
                             modifier = Modifier.fillMaxWidth().testTag("settings_occupation_input"),
-                            singleLine = true
+                            singleLine = true,
+                            enabled = isEditingInfo
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -555,9 +578,18 @@ fun SettingsScreen(
                                 var previewLoadFailed by remember(avatarUri) { mutableStateOf(false) }
                                 Box(
                                     modifier = Modifier
-                                        .size(64.dp)
+                                        .size(100.dp)
                                         .clip(CircleShape)
-                                        .background(if (avatarUri != null && !previewLoadFailed) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant),
+                                        .background(if (avatarUri != null && !previewLoadFailed) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant)
+                                        .pointerInput(Unit) {
+                                            if (avatarUri != null && !previewLoadFailed) {
+                                                detectTransformGestures { _, pan, zoom, _ ->
+                                                    avatarScale = (avatarScale * zoom).coerceIn(0.5f, 4.0f)
+                                                    avatarOffsetX = (avatarOffsetX + pan.x).coerceIn(-150f, 150f)
+                                                    avatarOffsetY = (avatarOffsetY + pan.y).coerceIn(-150f, 150f)
+                                                }
+                                            }
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (avatarUri != null && !previewLoadFailed) {
@@ -574,8 +606,8 @@ fun SettingsScreen(
                                                 .graphicsLayer {
                                                     scaleX = avatarScale
                                                     scaleY = avatarScale
-                                                    translationX = avatarOffsetX
-                                                    translationY = avatarOffsetY
+                                                    translationX = avatarOffsetX * (100f / 100f)
+                                                    translationY = avatarOffsetY * (100f / 100f)
                                                 },
                                             onError = {
                                                 previewLoadFailed = true
@@ -583,7 +615,7 @@ fun SettingsScreen(
                                         )
                                     } else {
                                         val fallbackAvatar = AvatarHelper.getAvatar(selectedAvatarName)
-                                        Text(fallbackAvatar.emoji, fontSize = 32.sp)
+                                        Text(fallbackAvatar.emoji, fontSize = 48.sp)
                                     }
                                 }
 
@@ -598,7 +630,7 @@ fun SettingsScreen(
                                     ) {
                                         Icon(Icons.Filled.PhotoLibrary, contentDescription = null, modifier = Modifier.size(16.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Chọn từ Album", fontSize = 12.sp)
+                                        Text("Chọn ảnh", fontSize = 12.sp)
                                     }
 
                                     if (avatarUri != null) {
@@ -621,59 +653,27 @@ fun SettingsScreen(
                             }
 
                             if (avatarUri != null) {
-                                Spacer(modifier = Modifier.height(14.dp))
-                                Text(
-                                    "Căn chỉnh vị trí & kích cỡ:",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-
-                                Column(modifier = Modifier.padding(top = 8.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text("Kích cỡ (Thu phóng): ${String.format(Locale.US, "%.1f", avatarScale)}x", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Text("Đặt lại 1x", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable { avatarScale = 1.0f })
-                                    }
-                                    Slider(
-                                        value = avatarScale,
-                                        onValueChange = { avatarScale = it },
-                                        valueRange = 0.5f..3.0f,
-                                        modifier = Modifier.fillMaxWidth()
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        "Kéo & thu phóng trực tiếp trên hình tròn để căn chỉnh.",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                        modifier = Modifier.weight(1f).padding(end = 6.dp)
                                     )
-                                }
-
-                                Column {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text("Căn chỉnh ngang (X): ${avatarOffsetX.toInt()} px", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Text("Đặt lại", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable { avatarOffsetX = 0f })
-                                    }
-                                    Slider(
-                                        value = avatarOffsetX,
-                                        onValueChange = { avatarOffsetX = it },
-                                        valueRange = -100f..100f,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-
-                                Column {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text("Căn chỉnh dọc (Y): ${avatarOffsetY.toInt()} px", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Text("Đặt lại", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable { avatarOffsetY = 0f })
-                                    }
-                                    Slider(
-                                        value = avatarOffsetY,
-                                        onValueChange = { avatarOffsetY = it },
-                                        valueRange = -100f..100f,
-                                        modifier = Modifier.fillMaxWidth()
+                                    Text(
+                                        "Đặt lại",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.clickable {
+                                            avatarScale = 1.0f
+                                            avatarOffsetX = 0f
+                                            avatarOffsetY = 0f
+                                        }
                                     )
                                 }
                             }
@@ -700,17 +700,19 @@ fun SettingsScreen(
                             selectedColorHex = selectedColorHex,
                             selectedFontName = selectedFontName,
                             appThemeMode = appThemeMode,
-                            monthActualSalaries = userConfig.monthActualSalaries
+                            monthActualSalaries = userConfig.monthActualSalaries,
+                            selectedLunarColorHex = selectedLunarColorHex
                         )
-                        saveSuccessShow = true
+                        saveSuccessMsg = "Thông tin cá nhân và tài khoản đã được cập nhật thành công."
                         activeSettingSection = null
+                        isEditingInfo = false
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp).testTag("save_account_btn"),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(Icons.Filled.Check, null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Lưu cá nhân & Trở về", fontWeight = FontWeight.Bold)
+                    Text("Lưu thông tin", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -895,9 +897,10 @@ fun SettingsScreen(
                             selectedColorHex = selectedColorHex,
                             selectedFontName = selectedFontName,
                             appThemeMode = appThemeMode,
-                            monthActualSalaries = userConfig.monthActualSalaries
+                            monthActualSalaries = userConfig.monthActualSalaries,
+                            selectedLunarColorHex = selectedLunarColorHex
                         )
-                        saveSuccessShow = true
+                        saveSuccessMsg = "Lương và phụ cấp đã được cập nhật thành công."
                         activeSettingSection = null
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp).testTag("save_salary_btn"),
@@ -905,7 +908,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Filled.Check, null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Lưu thiết lập & Trở về", fontWeight = FontWeight.Bold)
+                    Text("Lưu cấu hình", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1190,6 +1193,52 @@ fun SettingsScreen(
                             }
                         }
 
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text("Màu chữ lịch âm (Chọn màu nổi bật)", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                        val lunarColorPresets = listOf(
+                            "#FF9800" to Color(0xFFFF9800), // Cam (Default)
+                            "#E65100" to Color(0xFFE65100), // Cam đậm
+                            "#C62828" to Color(0xFFC62828), // Đỏ ruby
+                            "#E91E63" to Color(0xFFE91E63), // Hồng phấn
+                            "#00C853" to Color(0xFF00C853), // Xanh lá cây
+                            "#3F51B5" to Color(0xFF3F51B5), // Indigo
+                            "#00BCD4" to Color(0xFF00BCD4), // Cyan
+                            "#009688" to Color(0xFF009688), // Teal
+                            "#9C27B0" to Color(0xFF9C27B0), // Tím hồng
+                            "#FFEB3B" to Color(0xFFFFEB3B), // Vàng chanh
+                            "#795548" to Color(0xFF795548), // Nâu
+                            "#607D8B" to Color(0xFF607D8B)  // Xám xanh
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            lunarColorPresets.forEach { (colorHex, previewColor) ->
+                                val isChosen = selectedLunarColorHex.equals(colorHex, ignoreCase = true)
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(CircleShape)
+                                        .background(previewColor)
+                                        .border(
+                                            width = if (isChosen) 3.dp else 1.dp,
+                                            color = if (isChosen) MaterialTheme.colorScheme.onSurface else Color.Transparent,
+                                            shape = CircleShape
+                                        )
+                                        .clickable { selectedLunarColorHex = colorHex },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isChosen) {
+                                        Icon(Icons.Filled.Check, null, tint = Color.White, modifier = Modifier.size(18.dp))
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text("Kiểu chữ hiển thị", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
                         val fontOptionPairs = listOf(
                             "Sử dụng mặc định" to "Mặc định (System)",
@@ -1232,9 +1281,10 @@ fun SettingsScreen(
                             selectedColorHex = selectedColorHex,
                             selectedFontName = selectedFontName,
                             appThemeMode = appThemeMode,
-                            monthActualSalaries = userConfig.monthActualSalaries
+                            monthActualSalaries = userConfig.monthActualSalaries,
+                            selectedLunarColorHex = selectedLunarColorHex
                         )
-                        saveSuccessShow = true
+                        saveSuccessMsg = "Giao diện và phông chữ đã được cập nhật thành công."
                         activeSettingSection = null
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp).testTag("save_theme_btn"),
@@ -1242,7 +1292,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Filled.Check, null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Lưu cấu hình & Trở về", fontWeight = FontWeight.Bold)
+                    Text("Lưu giao diện", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1381,7 +1431,8 @@ fun SettingsScreen(
                                                     selectedColorHex = currentConfig.selectedColorHex,
                                                     selectedFontName = currentConfig.selectedFontName,
                                                     appThemeMode = currentConfig.appThemeMode,
-                                                    monthActualSalaries = mapObj.toString()
+                                                    monthActualSalaries = mapObj.toString(),
+                                                    selectedLunarColorHex = currentConfig.selectedLunarColorHex
                                                 )
                                                 settlementSuccessShow = true
                                             } else {
@@ -1455,7 +1506,8 @@ fun SettingsScreen(
                                                     selectedColorHex = currentConfig.selectedColorHex,
                                                     selectedFontName = currentConfig.selectedFontName,
                                                     appThemeMode = currentConfig.appThemeMode,
-                                                    monthActualSalaries = mapObj.toString()
+                                                    monthActualSalaries = mapObj.toString(),
+                                                    selectedLunarColorHex = currentConfig.selectedLunarColorHex
                                                 )
                                                 settlementCalculatedWage = null
                                             }
@@ -1952,13 +2004,13 @@ fun SettingsScreen(
         )
     }
 
-    if (saveSuccessShow) {
+    if (saveSuccessMsg != null) {
         AlertDialog(
-            onDismissRequest = { saveSuccessShow = false },
+            onDismissRequest = { saveSuccessMsg = null },
             title = { Text("Thành Công", fontWeight = FontWeight.Bold) },
-            text = { Text("Thông tin cá nhân, định mức lương ngày công và thiết lập giao diện đã được lưu trữ thành công.") },
+            text = { Text(saveSuccessMsg!!) },
             confirmButton = {
-                TextButton(onClick = { saveSuccessShow = false }) {
+                TextButton(onClick = { saveSuccessMsg = null }) {
                     Text("Đồng ý")
                 }
             }

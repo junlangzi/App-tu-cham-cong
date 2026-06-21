@@ -54,7 +54,8 @@ class AttendanceRepository(private val database: AppDatabase) {
         selectedColorHex: String = "#1E88E5",
         selectedFontName: String = "Sử dụng mặc định",
         appThemeMode: String = "SYSTEM",
-        monthActualSalaries: String = "{}"
+        monthActualSalaries: String = "{}",
+        selectedLunarColorHex: String = "#FF9800"
     ) {
         userConfigDao.insertUserConfig(
             UserConfig(
@@ -71,7 +72,8 @@ class AttendanceRepository(private val database: AppDatabase) {
                 selectedColorHex = selectedColorHex,
                 selectedFontName = selectedFontName,
                 appThemeMode = appThemeMode,
-                monthActualSalaries = monthActualSalaries
+                monthActualSalaries = monthActualSalaries,
+                selectedLunarColorHex = selectedLunarColorHex
             )
         )
     }
@@ -154,6 +156,7 @@ class AttendanceRepository(private val database: AppDatabase) {
                 put("selectedFontName", config.selectedFontName)
                 put("appThemeMode", config.appThemeMode)
                 put("monthActualSalaries", config.monthActualSalaries)
+                put("selectedLunarColorHex", config.selectedLunarColorHex)
             }
             root.put("user_config", cObj)
         }
@@ -239,7 +242,8 @@ class AttendanceRepository(private val database: AppDatabase) {
                     selectedColorHex = cObj.optString("selectedColorHex", "#1E88E5"),
                     selectedFontName = cObj.optString("selectedFontName", "Sử dụng mặc định"),
                     appThemeMode = cObj.optString("appThemeMode", "SYSTEM"),
-                    monthActualSalaries = cObj.optString("monthActualSalaries", "{}")
+                    monthActualSalaries = cObj.optString("monthActualSalaries", "{}"),
+                    selectedLunarColorHex = cObj.optString("selectedLunarColorHex", "#FF9800")
                 )
                 userConfigDao.insertUserConfig(config)
             }

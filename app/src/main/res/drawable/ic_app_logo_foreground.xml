@@ -6,161 +6,169 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- OVERALL SHADOW BACKDROP FOR THE ENTIRE BADGE -->
-    <!-- This creates a beautiful 3D float shadow on the background -->
-    <path
-        android:fillColor="#1F1A243F"
-        android:pathData="M 34,17.5 H 74 A 18,18 0 0 1 92,35.5 V 75.5 A 18,18 0 0 1 74,93.5 H 34 A 18,18 0 0 1 16,75.5 V 35.5 A 18,18 0 0 1 34,17.5 Z" />
-    <path
-        android:fillColor="#15000000"
-        android:pathData="M 34,16.5 H 74 A 18,18 0 0 1 92,34.5 V 74.5 A 18,18 0 0 1 74,92.5 H 34 A 18,18 0 0 1 16,74.5 V 34.5 A 18,18 0 0 1 34,16.5 Z" />
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.75"
+        android:scaleY="0.75">
 
-    <!-- CLIPPING ZONE FOR THE FOUR SECTIONS (Perfect Symmetrical Squircle) -->
-    <clip-path
-        android:pathData="M 34,16 H 74 A 18,18 0 0 1 92,34 V 74 A 18,18 0 0 1 74,92 H 34 A 18,18 0 0 1 16,74 V 34 A 18,18 0 0 1 34,16 Z" />
+        <!-- OVERALL SHADOW BACKDROP FOR THE ENTIRE BADGE -->
+        <!-- This creates a beautiful 3D float shadow on the background -->
+        <path
+            android:fillColor="#1F1A243F"
+            android:pathData="M 34,17.5 H 74 A 18,18 0 0 1 92,35.5 V 75.5 A 18,18 0 0 1 74,93.5 H 34 A 18,18 0 0 1 16,75.5 V 35.5 A 18,18 0 0 1 34,17.5 Z" />
+        <path
+            android:fillColor="#15000000"
+            android:pathData="M 34,16.5 H 74 A 18,18 0 0 1 92,34.5 V 74.5 A 18,18 0 0 1 74,92.5 H 34 A 18,18 0 0 1 16,74.5 V 34.5 A 18,18 0 0 1 34,16.5 Z" />
 
-    <!-- ========================================== -->
-    <!-- 1. GREEN PIECE (Top-Left Segment)         -->
-    <!-- ========================================== -->
-    <!-- Main Green block with premium gradient -->
-    <path
-        android:pathData="M 14,14 H 76.5 V 108 H 14 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="16"
-                android:startY="16"
-                android:endX="65"
-                android:endY="65">
-                <item android:offset="0.0" android:color="#4DE189" />
-                <item android:offset="1.0" android:color="#0D9643" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <!-- Highlight Overlay -->
-    <path
-        android:strokeColor="#35FFFFFF"
-        android:strokeWidth="1.2"
-        android:pathData="M 16,74 V 34 A 18,18 0 0 1 34,16 H 76.5" />
+        <!-- CLIPPING ZONE FOR THE FOUR SECTIONS (Perfect Symmetrical Squircle) -->
+        <clip-path
+            android:pathData="M 34,16 H 74 A 18,18 0 0 1 92,34 V 74 A 18,18 0 0 1 74,92 H 34 A 18,18 0 0 1 16,74 V 34 A 18,18 0 0 1 34,16 Z" />
 
-
-    <!-- ========================================== -->
-    <!-- 2. YELLOW PIECE (Diagonal Center Band)    -->
-    <!-- ========================================== -->
-    <!-- Soft shadow under Yellow -->
-    <path
-        android:fillColor="#1F1A2005"
-        android:pathData="M 14,76 L 76,14 H 94 L 14,94 Z" />
-    <!-- Main Yellow block with premium gradient -->
-    <path
-        android:pathData="M 14,77.5 L 77.5,14 H 94 L 14,94 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="16"
-                android:startY="45"
-                android:endX="92"
-                android:endY="92">
-                <item android:offset="0.0" android:color="#FFE852" />
-                <item android:offset="1.0" android:color="#D69800" />
-            </gradient>
-        </aapt:attr>
-    </path>
+        <!-- ========================================== -->
+        <!-- 1. GREEN PIECE (Top-Left Segment)         -->
+        <!-- ========================================== -->
+        <!-- Main Green block with premium gradient -->
+        <path
+            android:pathData="M 14,14 H 76.5 V 108 H 14 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="16"
+                    android:startY="16"
+                    android:endX="65"
+                    android:endY="65">
+                    <item android:offset="0.0" android:color="#4DE189" />
+                    <item android:offset="1.0" android:color="#0D9643" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <!-- Highlight Overlay -->
+        <path
+            android:strokeColor="#35FFFFFF"
+            android:strokeWidth="1.2"
+            android:pathData="M 16,74 V 34 A 18,18 0 0 1 34,16 H 76.5" />
 
 
-    <!-- ========================================== -->
-    <!-- 3. RED PIECE (Top-Right Segment)           -->
-    <!-- ========================================== -->
-    <!-- Soft shadow under Red -->
-    <path
-        android:fillColor="#1F1A0505"
-        android:pathData="M 76.5,14 H 94 V 31.5 Z" />
-    <!-- Main Red block with premium gradient -->
-    <path
-        android:pathData="M 77,14 H 94 V 31 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="77"
-                android:startY="14"
-                android:endX="94"
-                android:endY="31">
-                <item android:offset="0.0" android:color="#FC6E6E" />
-                <item android:offset="1.0" android:color="#D41B1B" />
-            </gradient>
-        </aapt:attr>
-    </path>
+        <!-- ========================================== -->
+        <!-- 2. YELLOW PIECE (Diagonal Center Band)    -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under Yellow -->
+        <path
+            android:fillColor="#1F1A2005"
+            android:pathData="M 14,76 L 76,14 H 94 L 14,94 Z" />
+        <!-- Main Yellow block with premium gradient -->
+        <path
+            android:pathData="M 14,77.5 L 77.5,14 H 94 L 14,94 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="16"
+                    android:startY="45"
+                    android:endX="92"
+                    android:endY="92">
+                    <item android:offset="0.0" android:color="#FFE852" />
+                    <item android:offset="1.0" android:color="#D69800" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
 
-    <!-- ========================================== -->
-    <!-- 4. BLUE PIECE (Bottom-Right Segment)       -->
-    <!-- ========================================== -->
-    <!-- Soft shadow under Blue -->
-    <path
-        android:fillColor="#2206152F"
-        android:pathData="M 29.5,94 L 94,29.5 V 94 Z" />
-    <!-- Main Blue block with premium gradient -->
-    <path
-        android:pathData="M 29,94 L 94,29 V 94 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="29"
-                android:startY="29"
-                android:endX="94"
-                android:endY="94">
-                <item android:offset="0.0" android:color="#59AAFC" />
-                <item android:offset="1.0" android:color="#1452D8" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <!-- Highlight Overlay for Blue -->
-    <path
-        android:strokeColor="#25FFFFFF"
-        android:strokeWidth="1.2"
-        android:pathData="M 92,34 V 74 A 18,18 0 0 1 74,92 H 34" />
+        <!-- ========================================== -->
+        <!-- 3. RED PIECE (Top-Right Segment)           -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under Red -->
+        <path
+            android:fillColor="#1F1A0505"
+            android:pathData="M 76.5,14 H 94 V 31.5 Z" />
+        <!-- Main Red block with premium gradient -->
+        <path
+            android:pathData="M 77,14 H 94 V 31 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="77"
+                    android:startY="14"
+                    android:endX="94"
+                    android:endY="31">
+                    <item android:offset="0.0" android:color="#FC6E6E" />
+                    <item android:offset="1.0" android:color="#D41B1B" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
 
-    <!-- ========================================== -->
-    <!-- 5. 3D HOLE IN RED PIECE                    -->
-    <!-- ========================================== -->
-    <!-- Depth shadow of the hole -->
-    <path
-        android:fillColor="#3A000000"
-        android:pathData="M 84,21 A 4,4 0 1 0 84,29 A 4,4 0 1 0 84,21 Z" />
-    <!-- Bottom material visible inside the hole (blends with background) -->
-    <path
-        android:fillColor="#F4F5F8"
-        android:pathData="M 84,21.5 A 3.5,3.5 0 1 0 84,28.5 A 3.5,3.5 0 1 0 84,21.5 Z" />
-    <!-- Inner ambient occlusion shadow ring -->
-    <path
-        android:strokeColor="#1F000000"
-        android:strokeWidth="0.8"
-        android:pathData="M 84,21.5 A 3.5,3.5 0 1 0 84,28.5 A 3.5,3.5 0 1 0 84,21.5 Z" />
+        <!-- ========================================== -->
+        <!-- 4. BLUE PIECE (Bottom-Right Segment)       -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under Blue -->
+        <path
+            android:fillColor="#2206152F"
+            android:pathData="M 29.5,94 L 94,29.5 V 94 Z" />
+        <!-- Main Blue block with premium gradient -->
+        <path
+            android:pathData="M 29,94 L 94,29 V 94 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="29"
+                    android:startY="29"
+                    android:endX="94"
+                    android:endY="94">
+                    <item android:offset="0.0" android:color="#59AAFC" />
+                    <item android:offset="1.0" android:color="#1452D8" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <!-- Highlight Overlay for Blue -->
+        <path
+            android:strokeColor="#25FFFFFF"
+            android:strokeWidth="1.2"
+            android:pathData="M 92,34 V 74 A 18,18 0 0 1 74,92 H 34" />
 
 
-    <!-- ========================================== -->
-    <!-- 6. GLOSSY SPARKLE ON BLUE CORNER           -->
-    <!-- ========================================== -->
-    <path
-        android:fillColor="#C5FFFFFF"
-        android:pathData="M 78,73 Q 78,77 82,77 Q 78,77 78,81 Q 78,77 74,77 Q 78,77 78,73 Z" />
+        <!-- ========================================== -->
+        <!-- 5. 3D HOLE IN RED PIECE                    -->
+        <!-- ========================================== -->
+        <!-- Depth shadow of the hole -->
+        <path
+            android:fillColor="#3A000000"
+            android:pathData="M 84,21 A 4,4 0 1 0 84,29 A 4,4 0 1 0 84,21 Z" />
+        <!-- Bottom material visible inside the hole (blends with background) -->
+        <path
+            android:fillColor="#F4F5F8"
+            android:pathData="M 84,21.5 A 3.5,3.5 0 1 0 84,28.5 A 3.5,3.5 0 1 0 84,21.5 Z" />
+        <!-- Inner ambient occlusion shadow ring -->
+        <path
+            android:strokeColor="#1F000000"
+            android:strokeWidth="0.8"
+            android:pathData="M 84,21.5 A 3.5,3.5 0 1 0 84,28.5 A 3.5,3.5 0 1 0 84,21.5 Z" />
 
 
-    <!-- ========================================== -->
-    <!-- 7. 3D WHITE LETTER 'V' IN EXACT CENTER     -->
-    <!-- ========================================== -->
-    <!-- Soft shadow under 'V' -->
-    <path
-        android:fillColor="#24000000"
-        android:pathData="M 34,34.5 H 45 L 54,54.5 L 63,34.5 H 74 L 59,74.5 H 49 Z" />
-    <!-- 3D Bevel/Extrusion Gray Highlight layer -->
-    <path
-        android:fillColor="#DCE0E6"
-        android:pathData="M 34,33.8 H 45 L 54,53.8 L 63,33.8 H 74 L 59,73.8 H 49 Z" />
-    <!-- Pure White Surface layer -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M 34,33 H 45 L 54,53 L 63,33 H 74 L 59,73 H 49 Z" />
+        <!-- ========================================== -->
+        <!-- 6. GLOSSY SPARKLE ON BLUE CORNER           -->
+        <!-- ========================================== -->
+        <path
+            android:fillColor="#C5FFFFFF"
+            android:pathData="M 78,73 Q 78,77 82,77 Q 78,77 78,81 Q 78,77 74,77 Q 78,77 78,73 Z" />
+
+
+        <!-- ========================================== -->
+        <!-- 7. 3D WHITE LETTER 'V' IN EXACT CENTER     -->
+        <!-- ========================================== -->
+        <!-- Soft shadow under 'V' -->
+        <path
+            android:fillColor="#24000000"
+            android:pathData="M 34,34.5 H 45 L 54,54.5 L 63,34.5 H 74 L 59,74.5 H 49 Z" />
+        <!-- 3D Bevel/Extrusion Gray Highlight layer -->
+        <path
+            android:fillColor="#DCE0E6"
+            android:pathData="M 34,33.8 H 45 L 54,53.8 L 63,33.8 H 74 L 59,73.8 H 49 Z" />
+        <!-- Pure White Surface layer -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 34,33 H 45 L 54,53 L 63,33 H 74 L 59,73 H 49 Z" />
+
+    </group>
 
 </vector>

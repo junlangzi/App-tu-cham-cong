@@ -60,6 +60,38 @@ fun getDailySalaryForMonth(config: UserConfig, month: String): Double {
     return config.dailySalary
 }
 
+fun getContrastColor(selectedColorHex: String, fallbackColor: Color): Color {
+    try {
+        if (selectedColorHex.isEmpty() || !selectedColorHex.startsWith("#")) {
+            return fallbackColor
+        }
+        val colors = if (selectedColorHex.contains(",")) {
+            selectedColorHex.split(",")
+        } else {
+            listOf(selectedColorHex)
+        }
+        
+        var totalLuminance = 0.0
+        var count = 0
+        for (hex in colors) {
+            val h = hex.trim()
+            if (h.startsWith("#")) {
+                val colorInt = android.graphics.Color.parseColor(h)
+                val r = android.graphics.Color.red(colorInt) / 255.0
+                val g = android.graphics.Color.green(colorInt) / 255.0
+                val b = android.graphics.Color.blue(colorInt) / 255.0
+                val luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+                totalLuminance += luminance
+                count++
+            }
+        }
+        val avgLuminance = if (count > 0) totalLuminance / count else 0.0
+        return if (avgLuminance > 0.55) Color(0xFF1C1B1F) else Color.White
+    } catch (e: Exception) {
+        return fallbackColor
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainLayout(viewModel: AttendanceViewModel) {
@@ -74,6 +106,11 @@ fun MainLayout(viewModel: AttendanceViewModel) {
     var currentTab by remember { mutableStateOf("home") }
     var showWorkLogDialog by remember { mutableStateOf(false) }
     var showMonthJumpDialog by remember { mutableStateOf(false) }
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+    BackHandler(enabled = currentTab != "home") {
+        currentTab = "home"
+    }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -308,8 +345,8 @@ fun HomeScreen(
                                     .graphicsLayer {
                                         scaleX = userConfig.avatarScale
                                         scaleY = userConfig.avatarScale
-                                        translationX = userConfig.avatarOffsetX
-                                        translationY = userConfig.avatarOffsetY
+                                        translationX = userConfig.avatarOffsetX * (60f / 100f)
+                                        translationY = userConfig.avatarOffsetY * (60f / 100f)
                                     },
                                 onError = {
                                     imageLoadFailed = true
@@ -354,6 +391,7 @@ fun HomeScreen(
 
         // Selected Month Summary Display Card
         item {
+            val contentColor = getContrastColor(userConfig.selectedColorHex, MaterialTheme.colorScheme.onPrimary)
             Card(
                 shape = RoundedCornerShape(24.dp),
                 modifier = Modifier
@@ -370,7 +408,7 @@ fun HomeScreen(
                             }
                             Modifier.background(Brush.linearGradient(colors))
                         } else {
-                            Modifier.background(MaterialTheme.colorScheme.primaryContainer)
+                            Modifier.background(MaterialTheme.colorScheme.primary)
                         }
                     ),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -389,38 +427,31 @@ fun HomeScreen(
                             modifier = Modifier.testTag("month_prev_btn"),
                             onClick = { viewModel.changeMonth(-1) }
                         ) {
-                            Icon(Icons.Filled.ChevronLeft, "Tháng trước", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Icon(Icons.Filled.ChevronLeft, "Tháng trước", tint = contentColor)
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { onMonthClick() }
                                 .padding(horizontal = 4.dp, vertical = 4.dp)
+                                .clickable { onMonthClick() }
                         ) {
                             Text(
                                 text = monthTitle,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                color = contentColor,
                                 textAlign = TextAlign.Center,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f, fill = false)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.Filled.Edit,
-                                contentDescription = "Nhập tháng năm",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                                modifier = Modifier.size(14.dp)
                             )
                         }
                         IconButton(
                             modifier = Modifier.testTag("month_next_btn"),
                             onClick = { viewModel.changeMonth(1) }
                         ) {
-                            Icon(Icons.Filled.ChevronRight, "Tháng sau", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Icon(Icons.Filled.ChevronRight, "Tháng sau", tint = contentColor)
                         }
                     }
 
@@ -429,7 +460,7 @@ fun HomeScreen(
                     Text(
                         text = "TỔNG THU NHẬP TẠM TÍNH",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                        color = contentColor.copy(alpha = 0.7f),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
@@ -440,7 +471,7 @@ fun HomeScreen(
                             fontWeight = FontWeight.Black,
                             letterSpacing = 0.sp
                         ),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = contentColor,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -448,23 +479,23 @@ fun HomeScreen(
                     )
 
                     Divider(
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
+                        color = contentColor.copy(alpha = 0.15f),
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
 
                     // Stats row grids
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Ngày làm", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
-                            Text("$totalWorkedDays ngày", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Ngày làm", fontSize = 11.sp, color = contentColor.copy(alpha = 0.7f))
+                            Text("$totalWorkedDays ngày", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = contentColor)
                         }
                         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Tổng công", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
-                            Text(FormatHelper.formatRatio(totalLaborDays), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Tổng công", fontSize = 11.sp, color = contentColor.copy(alpha = 0.7f))
+                            Text(FormatHelper.formatRatio(totalLaborDays), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = contentColor)
                         }
                         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Lương cơ bản", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
-                            Text(FormatHelper.formatVndNoSymbol(regularSalary), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Lương cơ bản", fontSize = 11.sp, color = contentColor.copy(alpha = 0.7f))
+                            Text(FormatHelper.formatVndNoSymbol(regularSalary), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = contentColor)
                         }
                     }
 
@@ -472,22 +503,22 @@ fun HomeScreen(
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Hỗ trợ khâu", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
-                            Text(FormatHelper.formatVndNoSymbol(totalSupportAmount), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Hỗ trợ khâu", fontSize = 11.sp, color = contentColor.copy(alpha = 0.7f))
+                            Text(FormatHelper.formatVndNoSymbol(totalSupportAmount), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = contentColor)
                         }
                         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Tổng tiền ăn", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
-                            Text(FormatHelper.formatVndNoSymbol(totalMealAllowance), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Tổng tiền ăn", fontSize = 11.sp, color = contentColor.copy(alpha = 0.7f))
+                            Text(FormatHelper.formatVndNoSymbol(totalMealAllowance), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = contentColor)
                         }
                         Column(modifier = Modifier.weight(1.0f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Tiền khác", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
-                            Text(FormatHelper.formatVndNoSymbol(totalOtherAmount), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Tiền khác", fontSize = 11.sp, color = contentColor.copy(alpha = 0.7f))
+                            Text(FormatHelper.formatVndNoSymbol(totalOtherAmount), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = contentColor)
                         }
                     }
 
                     if (totalMonthlySupportCustom > 0) {
                         Divider(
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
+                            color = contentColor.copy(alpha = 0.15f),
                             modifier = Modifier.padding(vertical = 12.dp)
                         )
                         Row(
@@ -495,22 +526,22 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Tổng hỗ trợ/phụ cấp cố định tháng:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
-                            Text(FormatHelper.formatVnd(totalMonthlySupportCustom), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Tổng hỗ trợ/phụ cấp cố định tháng:", fontSize = 12.sp, color = contentColor.copy(alpha = 0.8f))
+                            Text(FormatHelper.formatVnd(totalMonthlySupportCustom), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = contentColor)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)),
+                        colors = CardDefaults.cardColors(containerColor = contentColor.copy(alpha = 0.12f)),
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = "Tính với mức lương cố định: ${FormatHelper.formatVnd(getDailySalaryForMonth(userConfig, selectedMonth))} / ngày công.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = contentColor,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp),
@@ -537,7 +568,8 @@ fun HomeScreen(
                 monthlyLogs = monthlyLogs,
                 onDateSelected = { date ->
                     viewModel.selectDate(date)
-                }
+                },
+                selectedLunarColorHex = userConfig.selectedLunarColorHex
             )
         }
 
@@ -632,9 +664,9 @@ fun HomeScreen(
                                     .weight(1.0f)
                                     .testTag("quick_log_btn")
                             ) {
-                                Icon(Icons.Filled.Check, contentDescription = "Chấm công nhanh")
+                                Icon(Icons.Filled.Check, contentDescription = "Chấm công")
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Chấm nhanh", fontSize = 13.sp)
+                                Text("Chấm công", fontSize = 13.sp)
                             }
                         }
 
@@ -644,9 +676,9 @@ fun HomeScreen(
                                 .weight(1.0f)
                                 .testTag("detailed_edit_btn")
                         ) {
-                            Icon(Icons.Filled.Edit, contentDescription = "Chỉnh sửa chi tiết")
+                            Icon(Icons.Filled.Edit, contentDescription = "Tuỳ chỉnh chi tiết")
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(if (activeLog == null) "Chấm chi tiết" else "Sửa đổi", fontSize = 13.sp)
+                            Text("Tuỳ chỉnh", fontSize = 13.sp)
                         }
                     }
                 }
@@ -726,7 +758,8 @@ fun CalendarGridWidget(
     selectedMonth: String,
     selectedDate: String,
     monthlyLogs: List<WorkLog>,
-    onDateSelected: (String) -> Unit
+    onDateSelected: (String) -> Unit,
+    selectedLunarColorHex: String = "#FF9800"
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -801,7 +834,7 @@ fun CalendarGridWidget(
                         Box(
                             modifier = Modifier
                                 .weight(1.0f)
-                                .aspectRatio(1.0f)
+                                .aspectRatio(0.82f)
                                 .padding(2.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -815,7 +848,7 @@ fun CalendarGridWidget(
                                     totalWorkRatio = logForDay.ratio1 + logForDay.ratio2
                                 }
 
-                                Column(
+                                Box(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .clip(RoundedCornerShape(12.dp))
@@ -826,46 +859,62 @@ fun CalendarGridWidget(
                                                 else -> Color.Transparent
                                             }
                                         )
-                                        .clickable { onDateSelected(dateStr) }
-                                        .padding(2.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
+                                        .clickable { onDateSelected(dateStr) },
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     val isSunday = (c == 6)
                                     val lunarData = LunarCalendar.convertSolar2Lunar(dayNumber, month, year)
                                     val isHoliday = LunarCalendar.isVietnameseHoliday(dayNumber, month, lunarData.day, lunarData.month)
 
-                                    Text(
-                                        text = dayNumber.toString(),
-                                        fontSize = 13.sp,
-                                        fontWeight = if (isSelected || totalWorkRatio > 0 || isSunday || isHoliday) FontWeight.Bold else FontWeight.Normal,
-                                        color = when {
-                                            isSelected -> MaterialTheme.colorScheme.onPrimary
-                                            isHoliday -> Color(0xFFF57F17) // Gold-Yellow
-                                            totalWorkRatio > 0 -> MaterialTheme.colorScheme.onPrimaryContainer
-                                            isSunday -> Color.Red
-                                            else -> MaterialTheme.colorScheme.onSurface
-                                        }
-                                    )
-
-                                    val lunarText = if (lunarData.day == 1) "${lunarData.day}/${lunarData.month}" else lunarData.day.toString()
-                                    Text(
-                                        text = lunarText,
-                                        fontSize = 8.sp,
-                                        fontWeight = if (isHoliday) FontWeight.Bold else FontWeight.Normal,
-                                        color = when {
-                                            isSelected -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                                            isHoliday -> Color(0xFFF57F17)
-                                            else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
-                                        }
-                                    )
-
-                                    if (totalWorkRatio > 0) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(horizontal = 2.dp, vertical = 2.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
                                         Text(
-                                            text = "${FormatHelper.formatRatio(totalWorkRatio)}c",
-                                            fontSize = 8.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary
+                                            text = dayNumber.toString(),
+                                            fontSize = 13.sp,
+                                            fontWeight = if (isSelected || totalWorkRatio > 0 || isSunday || isHoliday) FontWeight.Bold else FontWeight.Normal,
+                                            color = when {
+                                                isSelected -> MaterialTheme.colorScheme.onPrimary
+                                                isHoliday -> Color(0xFFF57F17) // Gold-Yellow
+                                                totalWorkRatio > 0 -> MaterialTheme.colorScheme.onPrimaryContainer
+                                                isSunday -> Color.Red
+                                                else -> MaterialTheme.colorScheme.onSurface
+                                            },
+                                            style = androidx.compose.ui.text.TextStyle(
+                                                platformStyle = androidx.compose.ui.text.PlatformTextStyle(
+                                                    includeFontPadding = false
+                                                )
+                                            ),
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Spacer(modifier = Modifier.height(1.dp))
+
+                                        val lunarText = if (lunarData.day == 1) "${lunarData.day}/${lunarData.month}" else lunarData.day.toString()
+                                        val lunarColor = try {
+                                            Color(android.graphics.Color.parseColor(selectedLunarColorHex))
+                                        } catch (e: Exception) {
+                                            Color(0xFFFF9800)
+                                        }
+                                        Text(
+                                            text = lunarText,
+                                            fontSize = 9.sp,
+                                            fontWeight = if (isHoliday || lunarData.day == 1) FontWeight.Bold else FontWeight.Medium,
+                                            color = when {
+                                                isSelected -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                                                isHoliday -> Color(0xFFF57F17)
+                                                else -> lunarColor
+                                            },
+                                            style = androidx.compose.ui.text.TextStyle(
+                                                platformStyle = androidx.compose.ui.text.PlatformTextStyle(
+                                                    includeFontPadding = false
+                                                )
+                                            ),
+                                            textAlign = TextAlign.Center
                                         )
                                     }
                                 }
@@ -1157,8 +1206,8 @@ fun StatsScreen(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .weight(1.0f)
-                            .clickable { onMonthClick() }
                             .padding(horizontal = 4.dp, vertical = 4.dp)
+                            .clickable { onMonthClick() }
                     ) {
                         Text(
                             text = monthTitle,
@@ -1168,13 +1217,6 @@ fun StatsScreen(
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, fill = false)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Nhập tháng năm",
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
-                            modifier = Modifier.size(14.dp)
                         )
                     }
                     IconButton(onClick = { viewModel.changeMonth(1) }) {
@@ -2268,8 +2310,8 @@ fun OldSettingsScreen(
                                             .graphicsLayer {
                                                 scaleX = avatarScale
                                                 scaleY = avatarScale
-                                                translationX = avatarOffsetX
-                                                translationY = avatarOffsetY
+                                                translationX = avatarOffsetX * (64f / 100f)
+                                                translationY = avatarOffsetY * (64f / 100f)
                                             },
                                         onError = {
                                             previewLoadFailed = true
@@ -3059,15 +3101,8 @@ fun OldSettingsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "Ghi nhận ngày làm công, trợ cấp chuyên cần, tính năng đồng bộ tiền lương phụ cấp hàng loạt cực kỳ thông minh cùng quyết toán lương thực tế chuẩn xác.",
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Phiên bản v2.4 • Ngô Thế Quân Vts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+                    Text("Phiên bản v2.7 • Ngô Thế Quân", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                 }
             }
         }
@@ -3890,7 +3925,7 @@ fun WorkLogEditorDialog(
                             onCheckedChange = { hasSecondJob = it }
                         )
                         Column(modifier = Modifier.clickable { hasSecondJob = !hasSecondJob }) {
-                            Text("Chấm thêm công việc thứ 2", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
+                            Text("Thêm công việc thứ 2", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
                             Text("Dành cho ngày làm 2 công việc khác nhau", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                         }
                     }
@@ -4131,9 +4166,9 @@ fun WorkLogEditorDialog(
                                     .weight(0.9f)
                                     .testTag("delete_log_confirm")
                             ) {
-                                Icon(Icons.Filled.Delete, "Xóa chấm công")
+                                Icon(Icons.Filled.Delete, "Xóa")
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Xóa công", fontSize = 13.sp)
+                                Text("Xóa", fontSize = 13.sp)
                             }
                         }
 
@@ -4180,9 +4215,9 @@ fun WorkLogEditorDialog(
                                 .weight(1.1f)
                                 .testTag("save_log_confirm")
                         ) {
-                            Icon(Icons.Filled.Check, "Lưu thông tin")
+                            Icon(Icons.Filled.Check, "Lưu")
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Lưu chấm", fontSize = 13.sp)
+                            Text("Lưu", fontSize = 13.sp)
                         }
                     }
                 }
@@ -4236,7 +4271,7 @@ fun MonthYearPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Chọn Tháng Năm", fontWeight = FontWeight.Bold) },
+        title = { Text("Chọn thời gian", fontWeight = FontWeight.Bold) },
         text = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -4289,6 +4324,48 @@ fun MonthYearPickerDialog(
                         }
                     ) {
                         Icon(Icons.Filled.ChevronRight, "Tăng năm")
+                    }
+                }
+
+                val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+                val yearsRange = remember { (currentYear - 50)..(currentYear + 50) }
+                val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+
+                LaunchedEffect(selectedYear) {
+                    val index = yearsRange.indexOf(selectedYear)
+                    if (index >= 0) {
+                        lazyListState.scrollToItem((index - 2).coerceAtLeast(0))
+                    }
+                }
+
+                androidx.compose.foundation.lazy.LazyRow(
+                    state = lazyListState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp)
+                ) {
+                    items(yearsRange.toList()) { y ->
+                        val isYearSelected = y == selectedYear
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isYearSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable {
+                                    selectedYear = y
+                                    typedYear = y.toString()
+                                }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = y.toString(),
+                                fontSize = 14.sp,
+                                fontWeight = if (isYearSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isYearSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
 

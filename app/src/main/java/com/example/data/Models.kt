@@ -19,7 +19,8 @@ data class UserConfig(
     val selectedColorHex: String = "#1E88E5",
     val selectedFontName: String = "Sử dụng mặc định",
     val appThemeMode: String = "SYSTEM",
-    val monthActualSalaries: String = "{}"
+    val monthActualSalaries: String = "{}",
+    val selectedLunarColorHex: String = "#FF9800"
 )
 
 @Entity(tableName = "jobs")

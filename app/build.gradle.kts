@@ -14,8 +14,8 @@ android {
     applicationId = "com.aistudio.tuchamcong.gkjrpa"
     minSdk = 24
     targetSdk = 36
-    versionCode = 12
-    versionName = "2.4"
+    versionCode = 19
+    versionName = "2.9.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -101,3 +101,5 @@ dependencies {
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
 }
+
+
